@@ -6,12 +6,11 @@ from pathlib import Path
 from gtfs_station_stop.feed_subject import FeedSubject
 from gtfs_station_stop.station_stop_info import StationStopInfoDatabase
 from gtfs_station_stop.trip_info import TripInfoDatabase
-import voluptuous as vol
-
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.typing import ConfigType
+import voluptuous as vol
 
 from .const import API_KEY, DOMAIN, GTFS_STATIC_DATA, ROUTE_ICONS, URL_ENDPOINTS
 from .coordinator import GtfsRealtimeCoordinator

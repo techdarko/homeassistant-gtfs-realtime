@@ -4,7 +4,6 @@ from datetime import timedelta
 import logging
 
 from gtfs_station_stop.feed_subject import FeedSubject
-
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
