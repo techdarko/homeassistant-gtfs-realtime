@@ -36,7 +36,7 @@ CONFIG_SCHEMA = vol.Schema(
 def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up GTFS Realtime Feed Subject for use by all sensors."""
     hub = FeedSubject(config[DOMAIN][API_KEY], config[DOMAIN][URL_ENDPOINTS])
-    gtfs_static_zip = Path.cwd() / "config" / config[DOMAIN][GTFS_STATIC_DATA]
+    gtfs_static_zip = config[DOMAIN][GTFS_STATIC_DATA]
     route_icons = config[DOMAIN].get(ROUTE_ICONS)  # optional
     ssi_db = StationStopInfoDatabase(gtfs_static_zip)
     ti_db = TripInfoDatabase(gtfs_static_zip)
