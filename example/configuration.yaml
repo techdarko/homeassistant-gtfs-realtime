@@ -1,0 +1,33 @@
+# define the integration
+gtfs_realtime:
+  # enter your api_key here, it is recommended to save it in secrets.yaml
+  # and reference it like so
+  api_key: !secret gtfs_realtime_api_key
+  url_endpoints:
+   - "https://gtfs.example.com/feed1"
+   - "https://gtfs.example.com/feed2"
+   - "https://gtfs.example.com/alerts"
+  # static data should be downloaded by your provider and saved 
+  # as a .zip file inside your /config folder
+  gtfs_static_data: gtfs_static.zip
+  # route icons can be customized by placing a folder within 
+  # /config/www/ which contains files named with the route_id and 
+  # for example /config/www/svg_bullets/Line1.svg
+  route_icons: /local/svg_bullets
+  
+# define one sensor per
+sensor northbound east-st:
+  - platform: gtfs_realtime
+    stop_id: EAST_N
+    # optional, arrival limit, defaults to 4
+    arrival_limit: 4
+
+sensor southbound east-st:
+  - platform: gtfs_realtime
+    stop_id: EAST_S
+
+binary_sensor Line1 alert:
+  - platform: gtfs_realtime
+    route_id: Line1
+    # optional, alert limit defaults to 4
+    alert_limit: 4

@@ -24,7 +24,8 @@ PLATFORM_SCHEMA = BINARY_SENSOR_PLATFORM_SCHEMA.extend(
         vol.Required(
             vol.Any(ROUTE_ID, STOP_ID),
             msg=f"Must specify at least one of ['{ROUTE_ID}', 'f{STOP_ID}']",
-        ): cv.string
+        ): cv.string,
+        vol.Optional(ALERT_LIMIT, default=4): int
     }
 )
 
@@ -36,7 +37,7 @@ def setup_platform(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the sensor platform."""
-    alert_limit: int = config.get(ALERT_LIMIT, 4)
+    alert_limit: int = config[ALERT_LIMIT]
     coordinator: GtfsRealtimeCoordinator = hass.data[DOMAIN]["coordinator"]
     if discovery_info is None:
         if STOP_ID in config:

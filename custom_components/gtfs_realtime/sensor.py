@@ -25,7 +25,10 @@ import voluptuous as vol
 from .const import ARRIVAL_LIMIT, DOMAIN, ROUTE_ICONS, STOP_ID
 from .coordinator import GtfsRealtimeCoordinator
 
-PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend({vol.Required(STOP_ID): cv.string})
+PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend({
+    vol.Required(STOP_ID): cv.string,
+    vol.Optional(ARRIVAL_LIMIT, default=4): int
+    })
 
 
 def setup_platform(
@@ -41,7 +44,7 @@ def setup_platform(
             ssi_db: StationStopInfoDatabase = hass.data[DOMAIN]["ssi_db"]
             ti_db: TripInfoDatabase = hass.data[DOMAIN]["ti_db"]
             station_stop = StationStop(config[STOP_ID], coordinator.hub)
-            arrival_limit: int = config.get(ARRIVAL_LIMIT, 4)
+            arrival_limit: int = config[ARRIVAL_LIMIT]
             route_icons: os.PathLike = hass.data[DOMAIN].get(ROUTE_ICONS)
             add_entities(
                 [

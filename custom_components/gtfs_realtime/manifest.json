@@ -6,6 +6,6 @@
   "domain": "gtfs_realtime",
   "iot_class": "cloud_polling",
   "name": "GTFS Realtime",
-  "requirements": ["gtfs_station_stop==0.6.0b1"],
-  "version": "0.1.0"
+  "requirements": ["gtfs_station_stop~=0.6.0b1"],
+  "version": "0.1.1"
 }
