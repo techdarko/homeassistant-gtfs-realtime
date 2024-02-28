@@ -37,7 +37,7 @@ def setup_platform(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the sensor platform."""
-    alert_limit: int = config[ALERT_LIMIT]
+    alert_limit: int = config.get(ALERT_LIMIT, 4)
     coordinator: GtfsRealtimeCoordinator = hass.data[DOMAIN]["coordinator"]
     if discovery_info is None:
         if STOP_ID in config:
