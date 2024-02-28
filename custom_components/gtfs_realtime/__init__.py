@@ -6,12 +6,11 @@ from pathlib import Path
 from gtfs_station_stop.feed_subject import FeedSubject
 from gtfs_station_stop.station_stop_info import StationStopInfoDatabase
 from gtfs_station_stop.trip_info import TripInfoDatabase
-import voluptuous as vol
-
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.typing import ConfigType
+import voluptuous as vol
 
 from .const import API_KEY, DOMAIN, GTFS_STATIC_DATA, ROUTE_ICONS, URL_ENDPOINTS
 from .coordinator import GtfsRealtimeCoordinator
@@ -36,7 +35,7 @@ CONFIG_SCHEMA = vol.Schema(
 def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up GTFS Realtime Feed Subject for use by all sensors."""
     hub = FeedSubject(config[DOMAIN][API_KEY], config[DOMAIN][URL_ENDPOINTS])
-    gtfs_static_zip = Path.cwd() / "config" / config[DOMAIN][GTFS_STATIC_DATA]
+    gtfs_static_zip = config[DOMAIN][GTFS_STATIC_DATA]
     route_icons = config[DOMAIN].get(ROUTE_ICONS)  # optional
     ssi_db = StationStopInfoDatabase(gtfs_static_zip)
     ti_db = TripInfoDatabase(gtfs_static_zip)

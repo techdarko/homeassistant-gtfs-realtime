@@ -25,7 +25,10 @@ import voluptuous as vol
 from .const import ARRIVAL_LIMIT, DOMAIN, ROUTE_ICONS, STOP_ID
 from .coordinator import GtfsRealtimeCoordinator
 
-PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend({vol.Required(STOP_ID): cv.string})
+PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend({
+    vol.Required(STOP_ID): cv.string,
+    vol.Optional(ARRIVAL_LIMIT, default=4): int
+    })
 
 
 def setup_platform(
@@ -41,7 +44,7 @@ def setup_platform(
             ssi_db: StationStopInfoDatabase = hass.data[DOMAIN]["ssi_db"]
             ti_db: TripInfoDatabase = hass.data[DOMAIN]["ti_db"]
             station_stop = StationStop(config[STOP_ID], coordinator.hub)
-            arrival_limit: int = config.get(ARRIVAL_LIMIT, 4)
+            arrival_limit: int = config[ARRIVAL_LIMIT]
             route_icons: os.PathLike = hass.data[DOMAIN].get(ROUTE_ICONS)
             add_entities(
                 [
@@ -61,7 +64,7 @@ def setup_platform(
 class ArrivalSensor(SensorEntity, CoordinatorEntity):
     """Representation of a Station GTFS Realtime Arrival Sensor."""
 
-    _attr_native_unit_of_measurement = UnitOfTime.MINUTES
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
     _attr_suggested_unit_of_measurement = UnitOfTime.MINUTES
     _attr_device_class = SensorDeviceClass.DURATION
     _attr_state_class = SensorStateClass.MEASUREMENT
@@ -106,7 +109,7 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         self._name = self._get_station_ref()
         if len(time_to_arrivals) > self._idx:
             time_to_arrival: Arrival = time_to_arrivals[self._idx]
-            self._attr_native_value = time_to_arrival.time / 60.0
+            self._attr_native_value = max(time_to_arrival.time, 0) # do not allow negative numbers
             self._name = f"{time_to_arrival.route} {self._name}"
             if self.route_icons is not None:
                 self._attr_entity_picture = str(

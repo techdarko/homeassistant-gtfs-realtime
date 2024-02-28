@@ -1,0 +1,19 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: New York City Subway bullets
+message: Images provided by WIKIMEDIA COMMONS
+type: dataset
+authors:
+  - name: Wikimedia Commons contributors
+identifiers:
+  - type: url
+    value: >-
+      https://commons.wikimedia.org/w/index.php?title=New_York_City_Subway_bullets&oldid=835517052
+license: CC0-1.0
+date-released: "2023-12-27"
+version: 835517052
+references:
+  - date-accessed: "2024-02-28"
+    publisher: "Wikimedia Commons."
