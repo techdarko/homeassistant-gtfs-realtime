@@ -1,3 +1,4 @@
+![G](resources/NYCT_Bullets/G.svg)![T](resources/NYCT_Bullets/T.svg)![F](resources/NYCT_Bullets/F.svg)![S](resources/NYCT_Bullets/S.svg)
 # GTFS Realtime for Home Assistant
 
 ## Installation

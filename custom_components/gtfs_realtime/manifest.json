@@ -2,9 +2,10 @@
   "codeowners": ["@bcpearce"],
   "config_flow": false,
   "dependencies": [],
-  "documentation": "https://gitlab.bcpearce.com/bcpearce/homeassistant-gtfs-realtime",
+  "documentation": "https://github.com/bcpearce/homeassistant-gtfs-realtime",
   "domain": "gtfs_realtime",
   "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/bcpearce/homeassistant-gtfs-realtime/issues",
   "name": "GTFS Realtime",
   "requirements": ["gtfs_station_stop~=0.6.0b1"],
   "version": "0.1.2"
