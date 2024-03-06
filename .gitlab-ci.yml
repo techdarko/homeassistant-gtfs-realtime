@@ -7,7 +7,8 @@ variables:
   PRE_COMMIT_HOME: "/.cache/pre-commit"
   TEST_RESULTS_FILE: "test_results.xml"
   TEST_COVERAGE_FILE: "coverage.xml"
-  PYTHON_IMAGE: python:3
+  # pytest-homeassistant-custom-component is not compatible with python3.12
+  PYTHON_IMAGE: python:3.11
 
 default:
   image: $PYTHON_IMAGE
@@ -15,10 +16,10 @@ default:
     paths:
       - .cache/pip
   before_script:
-  - python --version ; pip --version
-  - pip install --upgrade pip
-  - pip install git+https://github.com/bcpearce/gtfs-station-stop.git@develop
-  - pip install -r requirements.test.txt
+    - python --version ; pip --version
+    - pip install --upgrade pip
+    - pip install git+https://github.com/bcpearce/gtfs-station-stop.git@develop
+    - pip install -r requirements.test.txt
 
 include:
   - template: Jobs/Secret-Detection.gitlab-ci.yml
@@ -51,4 +52,3 @@ pytest:
       coverage_report:
         coverage_format: cobertura
         path: $TEST_COVERAGE_FILE
-
