@@ -1,0 +1,53 @@
+stages:
+  - lint
+  - test
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PRE_COMMIT_HOME: "/.cache/pre-commit"
+  TEST_RESULTS_FILE: "test_results.xml"
+  TEST_COVERAGE_FILE: "coverage.xml"
+  PYTHON_IMAGE: python:3
+
+default:
+  image: $PYTHON_IMAGE
+  cache:
+    paths:
+      - .cache/pip
+  before_script:
+  - python --version ; pip --version
+  - pip install --upgrade pip
+  - pip install -r requirements.test.txt
+
+include:
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+secret_detection:
+  inherit:
+    default: false
+  stage: lint
+
+check_formatting:
+  stage: lint
+  cache:
+    paths:
+      - $PRE_COMMIT_HOME
+  script:
+    - pre-commit run --all-files
+
+pytest:
+  stage: test
+  script:
+    - pytest --cov=homeassistant-gtfs-realtime --cov-report term tests/ --cov-report xml:coverage.xml
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    when: always
+    paths:
+      - $TEST_RESULTS_FILE
+      - $TEST_COVERAGE_FILE
+    reports:
+      junit: $TEST_RESULTS_FILE
+      coverage_report:
+        coverage_format: cobertura
+        path: $TEST_COVERAGE_FILE
+
