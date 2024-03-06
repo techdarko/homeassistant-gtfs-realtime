@@ -3,6 +3,7 @@
 
 from pathlib import Path
 
+from gtfs_station_stop.calendar import Calendar
 from gtfs_station_stop.feed_subject import FeedSubject
 from gtfs_station_stop.station_stop_info import StationStopInfoDatabase
 from gtfs_station_stop.trip_info import TripInfoDatabase
@@ -12,7 +13,16 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 import voluptuous as vol
 
-from .const import API_KEY, DOMAIN, GTFS_STATIC_DATA, ROUTE_ICONS, URL_ENDPOINTS
+from .const import (
+    API_KEY,
+    CAL_DB,
+    DOMAIN,
+    GTFS_STATIC_DATA,
+    ROUTE_ICONS,
+    SSI_DB,
+    TI_DB,
+    URL_ENDPOINTS,
+)
 from .coordinator import GtfsRealtimeCoordinator
 
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
@@ -39,12 +49,14 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     route_icons = config[DOMAIN].get(ROUTE_ICONS)  # optional
     ssi_db = StationStopInfoDatabase(gtfs_static_zip)
     ti_db = TripInfoDatabase(gtfs_static_zip)
+    cal_db = Calendar(gtfs_static_zip)
     # Attempt to perform an update to verify configuration
     hub.update()
     coordinator = GtfsRealtimeCoordinator(hass, hub)
     hass.data[DOMAIN] = {
-        "ssi_db": ssi_db,
-        "ti_db": ti_db,
+        SSI_DB: ssi_db,
+        TI_DB: ti_db,
+        CAL_DB: cal_db,
         "coordinator": coordinator,
         ROUTE_ICONS: route_icons,
     }
