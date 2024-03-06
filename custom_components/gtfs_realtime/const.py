@@ -15,3 +15,11 @@ TI_DB = "trip_info_db"
 CAL_DB = "calendar_db"
 
 COORDINATOR = "coordinator"
+
+"""These Constants are user facing."""
+
+TRIP_ID_PRETTY = "Trip ID"
+HEADSIGN_PRETTY = "Headsign"
+
+HEADER_PRETTY = "Header"
+DESCRIPTION_PRETTY = "Description"

@@ -16,7 +16,14 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 import voluptuous as vol
 
-from .const import ALERT_LIMIT, DOMAIN, ROUTE_ID, STOP_ID
+from .const import (
+    ALERT_LIMIT,
+    DESCRIPTION_PRETTY,
+    DOMAIN,
+    HEADER_PRETTY,
+    ROUTE_ID,
+    STOP_ID,
+)
 from .coordinator import GtfsRealtimeCoordinator
 
 PLATFORM_SCHEMA = BINARY_SENSOR_PLATFORM_SCHEMA.extend(
@@ -74,7 +81,7 @@ def setup_platform(
 class AlertSensor(BinarySensorEntity, CoordinatorEntity):
     """Representation of a Station GTFS Realtime Alert Sensor."""
 
-    CLEAN_ALERT_DATA = {"Header": "", "Description": ""}
+    CLEAN_ALERT_DATA = {HEADER_PRETTY: "", DESCRIPTION_PRETTY: ""}
 
     _attr_device_class = BinarySensorDeviceClass.PROBLEM
 
@@ -94,7 +101,7 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
         self._name: str = f"{station_stop_info.name if station_stop_info is not None else informed_entity.id} Service Alerts"
         self._attr_is_on = False
         self._idx = idx
-        self._alert_detail: dict[str, str] = self.CLEAN_ALERT_DATA
+        self._alert_detail: dict[str, str] = AlertSensor.CLEAN_ALERT_DATA
         self._attr_unique_id = f"alert_{informed_entity.id}_{self._idx}"
 
     @property
@@ -114,10 +121,10 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
             self._attr_is_on = False
         elif len(alerts) > self._idx:
             self._attr_is_on = True
-            self._alert_detail["Header"] = alerts[self._idx].header_text.get(
+            self._alert_detail[HEADER_PRETTY] = alerts[self._idx].header_text.get(
                 self.language, ""
             )
-            self._alert_detail["Description"] = alerts[self._idx].description_text.get(
+            self._alert_detail[DESCRIPTION_PRETTY] = alerts[self._idx].description_text.get(
                 self.language, ""
             )
         self.async_write_ha_state()

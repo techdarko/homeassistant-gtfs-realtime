@@ -23,7 +23,18 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 import voluptuous as vol
 
-from .const import ARRIVAL_LIMIT, CAL_DB, DOMAIN, ROUTE_ICONS, SSI_DB, STOP_ID, TI_DB
+from .const import (
+    ARRIVAL_LIMIT,
+    CAL_DB,
+    DOMAIN,
+    HEADSIGN_PRETTY,
+    ROUTE_ICONS,
+    ROUTE_ID,
+    SSI_DB,
+    STOP_ID,
+    TI_DB,
+    TRIP_ID_PRETTY,
+)
 from .coordinator import GtfsRealtimeCoordinator
 
 PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend({
@@ -95,6 +106,7 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         self._attr_unique_id = f"arrival_{self.station_stop.id}_{self._idx}"
         self._attr_suggested_display_precision = 0
         self._attr_suggested_unit_of_measurement = UnitOfTime.MINUTES
+        self._arrival_detail: dict[str, str] = {}
 
     def _get_station_ref(self):
         return (
@@ -107,6 +119,18 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
     def name(self) -> str:
         """Name of the station from static data or else the Stop ID."""
         return self._name
+    
+    
+    @property
+    def extra_state_attributes(self) -> dict[str, str]:
+        """Explanation of Alerts for a given Stop ID."""
+        return self._arrival_detail
+    
+    @property
+    def entity_picture(self) -> str | None:
+        return str(
+            Path(self.route_icons) / (self._arrival_detail.get(ROUTE_ID) + ".svg")
+        ) if self.route_icons is not None else  None
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -115,15 +139,15 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         if len(time_to_arrivals) > self._idx:
             time_to_arrival: Arrival = time_to_arrivals[self._idx]
             self._attr_native_value = max(time_to_arrival.time, 0) # do not allow negative numbers
+            self._arrival_detail[ROUTE_ID] = time_to_arrival.route
             self._name = f"{time_to_arrival.route} {self._name}"
-            if self.route_icons is not None:
-                self._attr_entity_picture = str(
-                    Path(self.route_icons) / (time_to_arrival.route + ".svg")
-                )
+            
             if self.trip_info_db is not None:
                 trip_info = self.trip_info_db.get_close_match(time_to_arrival.trip, self.calendar_db)
                 if trip_info is not None:
                     self._name = f"{self._name} to {trip_info.trip_headsign}"
+                self._arrival_detail[HEADSIGN_PRETTY] = trip_info.trip_headsign
+                self._arrival_detail[TRIP_ID_PRETTY] = trip_info.trip_id
         else:
             self._attr_native_value = None
         self.async_write_ha_state()
