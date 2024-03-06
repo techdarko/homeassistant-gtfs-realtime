@@ -23,7 +23,7 @@ CONFIG_SCHEMA = vol.Schema(
             {
                 vol.Optional(API_KEY): cv.string,
                 vol.Required(URL_ENDPOINTS): vol.All([cv.url]),
-                vol.Optional(GTFS_STATIC_DATA): cv.path,
+                vol.Optional(GTFS_STATIC_DATA): vol.All([cv.url]),
                 vol.Optional(ROUTE_ICONS): cv.path,
             }
         )
