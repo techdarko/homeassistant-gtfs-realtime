@@ -13,5 +13,5 @@ from custom_components.gtfs_realtime.const import (
 
 async def test_async_setup(hass: HomeAssistant) -> None:
     """Test the component gets setup."""
-    test_config = {DOMAIN: {API_KEY: "", URL_ENDPOINTS: [], GTFS_STATIC_DATA: ""}}
+    test_config = {DOMAIN: {API_KEY: "", URL_ENDPOINTS: [], GTFS_STATIC_DATA: []}}
     assert await async_setup_component(hass, DOMAIN, test_config) is True

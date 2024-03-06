@@ -2,4 +2,4 @@ codecov==2.1.13
 gtfs-station-stop==0.7.0b0
 pre-commit==3.6.2
 pytest-cov==4.1.0
-pytest-homeassistant-custom-component
+pytest-homeassistant-custom-component==0.13.103
