@@ -44,7 +44,7 @@ def setup_platform(
         if STOP_ID in config:
             ssi_db: StationStopInfoDatabase = hass.data[DOMAIN][SSI_DB]
             ti_db: TripInfoDatabase = hass.data[DOMAIN][TI_DB]
-            calendar_db: Calendar = hass.data[DOMAIN][CAL_DB]
+            cal_db: Calendar = hass.data[DOMAIN][CAL_DB]
             station_stop = StationStop(config[STOP_ID], coordinator.hub)
             arrival_limit: int = config.get(ARRIVAL_LIMIT, 4)
             route_icons: os.PathLike = hass.data[DOMAIN].get(ROUTE_ICONS)
