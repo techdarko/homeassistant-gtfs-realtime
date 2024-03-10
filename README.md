@@ -16,7 +16,7 @@ Copy files in [custom_components/gtfs_realtime](custom_components/gtfs_realtime/
 2. Select "Integrations"
 3. Click the "..." in the upper left corner.
 4. Go to Custom Repositories
-5. Add this repository's URL (https://github.com/bcpearce/homeassistant-gtfs-realtime) in "Repository", set the category to "Integration"
+5. Add this repository's URL https://github.com/bcpearce/homeassistant-gtfs-realtime in "Repository", and set the category to "Integration"
 
 ## Configuration
 
