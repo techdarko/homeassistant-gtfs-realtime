@@ -9,3 +9,18 @@ STOP_ID = "stop_id"
 ALERT_LIMIT = "alert_limit"
 ARRIVAL_LIMIT = "arrival_limit"
 ROUTE_ID = "route_id"
+
+SSI_DB = "station_stop_info_db"
+TI_DB = "trip_info_db"
+CAL_DB = "calendar_db"
+
+COORDINATOR_REALTIME = "coordinator_realtime"
+COORDINATOR_STATIC = "coordinator_static"
+
+"""These Constants are user facing."""
+
+TRIP_ID_PRETTY = "Trip ID"
+HEADSIGN_PRETTY = "Headsign"
+
+HEADER_PRETTY = "Header"
+DESCRIPTION_PRETTY = "Description"

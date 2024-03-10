@@ -50,6 +50,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+test_results.xml
 
 # Translations
 *.mo
@@ -160,3 +161,9 @@ cython_debug/
 #.idea/
 
 .vscode/
+
+# GTFS Station Stop may be cloned locally for testing
+gtfs-station-stop/
+
+# Ignore hass config
+config/
