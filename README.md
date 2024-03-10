@@ -26,7 +26,10 @@ An example configuration file is provided in [example/configuration.yaml](exampl
 
 ### Static GTFS Data
 
-Static GTFS data is provided as a .zip file containing a number of .txt files representing a relational database.  This file should be copied into the Home Assistant `config` folder and specified in the `configuration.yaml` file. 
+Static GTFS data is provided as a .zip file containing a number of .txt files representing a relational database.
+The file can either specify a URL from the GTFS service provider, and it will be re-downloaded every day, or it can be a local file. 
+
+GTFS static info does not change as rapidly as realtime data, but will need to be refreshed.  For accurate headsigns and trip metadata, it is best to specify the provider's URL
 
 ```
 gtfs_realtime:
@@ -35,7 +38,9 @@ gtfs_realtime:
    - "https://gtfs.example.com/feed1"
    - "https://gtfs.example.com/feed2"
    - "https://gtfs.example.com/alerts"
-  gtfs_static_data: gtfs_static.zip
+  gtfs_static_data: 
+   - "https://gtfs.example.com/static.zip"
+   - "https://gtfs.example.com/static_supplemented.zip"
 ```
 
 ### Feed URLs
