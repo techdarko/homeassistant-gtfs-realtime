@@ -5,16 +5,17 @@ gtfs_realtime:
   # sign up for an API key at https://api.mta.info/
   api_key: !secret ny_mta_api_key
   url_endpoints:
-   - "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l"
-   - "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts"
-  # static data for Subways can be downloaded here: 
-  # http://web.mta.info/developers/data/nyct/subway/google_transit.zip
-  # copy the file into the config folder directly
-  gtfs_static_data: google_transit.zip
-  # route bullets are provided in resources/NYCT_Bullets with 
+    - "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l"
+    - "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts"
+  # static data for Subways updates less frequently
+  # use the URLs for regular and supplemented GTFS data for mostly complete schedules
+  gtfs_static_data:
+    - "http://web.mta.info/developers/data/nyct/subway/google_transit.zip"
+    - "http://web.mta.info/developers/files/google_transit_supplemented.zip"
+  # route bullets are provided in resources/NYCT_Bullets with
   route_icons: /local/NYCT_Bullets
 
-# the sensor config below will set up arrival notifications for 
+# the sensor config below will set up arrival notifications for
 # northbound and southbound 14th St-Union Sqare L trains as well
 # as service alerts for L trains
 
