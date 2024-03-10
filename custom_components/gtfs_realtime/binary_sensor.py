@@ -18,13 +18,16 @@ import voluptuous as vol
 
 from .const import (
     ALERT_LIMIT,
+    COORDINATOR_REALTIME,
+    COORDINATOR_STATIC,
     DESCRIPTION_PRETTY,
     DOMAIN,
     HEADER_PRETTY,
     ROUTE_ID,
+    SSI_DB,
     STOP_ID,
 )
-from .coordinator import GtfsRealtimeCoordinator
+from .coordinator import GtfsRealtimeCoordinator, GtfsStaticCoordinator
 
 PLATFORM_SCHEMA = BINARY_SENSOR_PLATFORM_SCHEMA.extend(
     {
@@ -45,10 +48,10 @@ def setup_platform(
 ) -> None:
     """Set up the sensor platform."""
     alert_limit: int = config.get(ALERT_LIMIT, 4)
-    coordinator: GtfsRealtimeCoordinator = hass.data[DOMAIN]["coordinator"]
+    coordinator: GtfsRealtimeCoordinator = hass.data[DOMAIN][COORDINATOR_REALTIME]
     if discovery_info is None:
         if STOP_ID in config:
-            ssi_db: StationStopInfoDatabase = hass.data[DOMAIN]["ssi_db"]
+            ssi_db: StationStopInfoDatabase = hass.data[DOMAIN][SSI_DB]
             station_stop = StationStop(config[STOP_ID], coordinator.hub)
             add_entities(
                 [

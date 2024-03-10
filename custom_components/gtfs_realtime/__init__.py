@@ -1,6 +1,7 @@
 """The GTFS Realtime integration."""
 # GTFS Station Stop Feed Subject serves as the data hub for the integration
 
+import calendar
 from pathlib import Path
 
 from gtfs_station_stop.calendar import Calendar
@@ -16,6 +17,8 @@ import voluptuous as vol
 from .const import (
     API_KEY,
     CAL_DB,
+    COORDINATOR_REALTIME,
+    COORDINATOR_STATIC,
     DOMAIN,
     GTFS_STATIC_DATA,
     ROUTE_ICONS,
@@ -23,7 +26,7 @@ from .const import (
     TI_DB,
     URL_ENDPOINTS,
 )
-from .coordinator import GtfsRealtimeCoordinator
+from .coordinator import GtfsRealtimeCoordinator, GtfsStaticCoordinator
 
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
 
@@ -47,17 +50,16 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hub = FeedSubject(config[DOMAIN][API_KEY], config[DOMAIN][URL_ENDPOINTS])
     gtfs_static_zip = config[DOMAIN][GTFS_STATIC_DATA]
     route_icons = config[DOMAIN].get(ROUTE_ICONS)  # optional
-    ssi_db = StationStopInfoDatabase(gtfs_static_zip)
-    ti_db = TripInfoDatabase(gtfs_static_zip)
-    cal_db = Calendar(gtfs_static_zip)
     # Attempt to perform an update to verify configuration
     hub.update()
-    coordinator = GtfsRealtimeCoordinator(hass, hub)
+    coordinator_realtime = GtfsRealtimeCoordinator(hass, hub)
+    coordinator_static = GtfsStaticCoordinator(hass, gtfs_static_zip)
     hass.data[DOMAIN] = {
-        SSI_DB: ssi_db,
-        TI_DB: ti_db,
-        CAL_DB: cal_db,
-        "coordinator": coordinator,
+        COORDINATOR_REALTIME: coordinator_realtime,
+        COORDINATOR_STATIC: coordinator_static,
+        CAL_DB: coordinator_static.calendar,
+        SSI_DB: coordinator_static.station_stop_info_db,
+        TI_DB: coordinator_static.trip_info_db,
         ROUTE_ICONS: route_icons,
     }
     if ROUTE_ICONS in config[DOMAIN]:

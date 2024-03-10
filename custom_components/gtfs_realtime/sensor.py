@@ -26,6 +26,8 @@ import voluptuous as vol
 from .const import (
     ARRIVAL_LIMIT,
     CAL_DB,
+    COORDINATOR_REALTIME,
+    COORDINATOR_STATIC,
     DOMAIN,
     HEADSIGN_PRETTY,
     ROUTE_ICONS,
@@ -50,7 +52,7 @@ def setup_platform(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the sensor platform."""
-    coordinator: GtfsRealtimeCoordinator = hass.data[DOMAIN]["coordinator"]
+    coordinator: GtfsRealtimeCoordinator = hass.data[DOMAIN][COORDINATOR_REALTIME]
     if discovery_info is None:
         if STOP_ID in config:
             ssi_db: StationStopInfoDatabase = hass.data[DOMAIN][SSI_DB]
@@ -129,11 +131,15 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
     @property
     def entity_picture(self) -> str | None:
         return str(
-            Path(self.route_icons) / (self._arrival_detail.get(ROUTE_ID) + ".svg")
-        ) if self.route_icons is not None else  None
+                Path(self.route_icons) / (self._arrival_detail[ROUTE_ID] + ".svg")
+            ) if self.route_icons is not None and self._arrival_detail.get(ROUTE_ID) is not None else None
+        
+    @property
+    def icon(self) -> str:
+        return "mdi:bus-clock"
 
-    @callback
-    def _handle_coordinator_update(self) -> None:
+    
+    def update(self) -> None:
         time_to_arrivals = sorted(self.station_stop.get_time_to_arrivals())
         self._name = self._get_station_ref()
         if len(time_to_arrivals) > self._idx:
@@ -151,3 +157,7 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         else:
             self._attr_native_value = None
         self.async_write_ha_state()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        self.update()

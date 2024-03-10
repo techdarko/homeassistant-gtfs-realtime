@@ -14,7 +14,8 @@ SSI_DB = "station_stop_info_db"
 TI_DB = "trip_info_db"
 CAL_DB = "calendar_db"
 
-COORDINATOR = "coordinator"
+COORDINATOR_REALTIME = "coordinator_realtime"
+COORDINATOR_STATIC = "coordinator_static"
 
 """These Constants are user facing."""
 
