@@ -40,7 +40,7 @@ check_formatting:
 pytest:
   stage: test
   script:
-    - pytest --cov=homeassistant-gtfs-realtime --cov-report term tests/ --cov-report xml:coverage.xml
+    - pytest --cov=homeassistant-gtfs-realtime --cov-report term tests/ --cov-report xml:$TEST_COVERAGE_FILE --junitxml $TEST_RESULTS_FILE
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     when: always
