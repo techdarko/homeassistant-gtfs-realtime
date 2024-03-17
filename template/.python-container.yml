@@ -1,0 +1,11 @@
+# Common python container setup for jobs
+.python-container:
+  image: $PYTHON_IMAGE
+  cache:
+    paths:
+      - .cache/pip
+  before_script:
+    - python --version ; pip --version
+    - pip install --upgrade pip
+    - pip install $(cat requirements.test.txt | grep "gtfs-station-stop") || pip install git+https://github.com/bcpearce/gtfs-station-stop.git@develop
+    - pip install -r requirements.test.txt
