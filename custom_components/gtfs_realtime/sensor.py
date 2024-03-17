@@ -73,7 +73,7 @@ def setup_platform(
                         route_icons=route_icons,
                     )
                     for i in range(arrival_limit)
-                ]
+                ], update_before_add=True
             )
 
 

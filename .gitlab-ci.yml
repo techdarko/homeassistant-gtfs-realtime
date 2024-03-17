@@ -1,27 +1,16 @@
 stages:
   - lint
   - test
+  - trigger-deploy
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   PRE_COMMIT_HOME: "/.cache/pre-commit"
-  TEST_RESULTS_FILE: "test_results.xml"
-  TEST_COVERAGE_FILE: "coverage.xml"
   # pytest-homeassistant-custom-component is not compatible with python3.12
   PYTHON_IMAGE: python:3.11
 
-default:
-  image: $PYTHON_IMAGE
-  cache:
-    paths:
-      - .cache/pip
-  before_script:
-    - python --version ; pip --version
-    - pip install --upgrade pip
-    - pip install $(cat requirements.test.txt | grep "gtfs-station-stop") || pip install git+https://github.com/bcpearce/gtfs-station-stop.git@develop
-    - pip install -r requirements.test.txt
-
 include:
+  - local: "/template/.python-container.yml"
   - template: Jobs/Secret-Detection.gitlab-ci.yml
 
 secret_detection:
@@ -31,6 +20,7 @@ secret_detection:
 
 check_formatting:
   stage: lint
+  extends: .python-container
   cache:
     paths:
       - $PRE_COMMIT_HOME
@@ -39,6 +29,10 @@ check_formatting:
 
 pytest:
   stage: test
+  extends: .python-container
+  variables:
+    TEST_RESULTS_FILE: "test_results.xml"
+    TEST_COVERAGE_FILE: "coverage.xml"
   script:
     - pytest --cov=homeassistant-gtfs-realtime --cov-report term tests/ --cov-report xml:$TEST_COVERAGE_FILE --junitxml $TEST_RESULTS_FILE
   coverage: '/TOTAL.*\s+(\d+%)$/'
@@ -52,3 +46,12 @@ pytest:
       coverage_report:
         coverage_format: cobertura
         path: $TEST_COVERAGE_FILE
+
+# Launch deployment from complementary deployment repo
+deploy_job:
+  stage: trigger-deploy
+  trigger:
+    include:
+      - project: bcpearce/homeassistant-gtfs-realtime-deploy
+        ref: main
+        file: /.gitlab-ci/deploy.yml

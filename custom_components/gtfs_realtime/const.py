@@ -17,6 +17,8 @@ CAL_DB = "calendar_db"
 COORDINATOR_REALTIME = "coordinator_realtime"
 COORDINATOR_STATIC = "coordinator_static"
 
+PLATFORM="platform"
+
 """These Constants are user facing."""
 
 TRIP_ID_PRETTY = "Trip ID"
