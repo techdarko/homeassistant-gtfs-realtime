@@ -66,10 +66,10 @@ def setup_platform(
                     ArrivalSensor(
                         coordinator,
                         station_stop,
+                        i,
                         ssi_db[station_stop.id],
                         ti_db,
                         cal_db,
-                        i,
                         route_icons=route_icons,
                     )
                     for i in range(arrival_limit)
@@ -90,20 +90,23 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         self,
         coordinator: GtfsRealtimeCoordinator,
         station_stop: StationStop,
-        station_stop_info: StationStopInfo | None,
-        trip_info_db: TripInfoDatabase | None,
-        calendar_db: Calendar | None,
         idx: int,
+        station_stop_info: StationStopInfo | None = None,
+        trip_info_db: TripInfoDatabase | None = None,
+        calendar_db: Calendar | None = None,
         route_icons: os.PathLike | None = None,
     ) -> None:
         """Initialize the sensor."""
+        # Required
         super().__init__(coordinator)
         self.station_stop = station_stop
+        self._idx = idx
+        # Allowed to be `None`
         self.station_stop_info = station_stop_info
         self.trip_info_db = trip_info_db
         self.calendar_db = calendar_db
-        self._idx = idx
         self.route_icons = route_icons
+
         self._name = self._get_station_ref()
         self._attr_unique_id = f"arrival_{self.station_stop.id}_{self._idx}"
         self._attr_suggested_display_precision = 0
@@ -114,7 +117,7 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         return (
             self.station_stop_info.name
             if self.station_stop_info is not None
-            else self.station_stop.stop_id
+            else self.station_stop.id
         )
 
     @property
@@ -147,13 +150,12 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
             self._attr_native_value = max(time_to_arrival.time, 0) # do not allow negative numbers
             self._arrival_detail[ROUTE_ID] = time_to_arrival.route
             self._name = f"{time_to_arrival.route} {self._name}"
-            
             if self.trip_info_db is not None:
                 trip_info = self.trip_info_db.get_close_match(time_to_arrival.trip, self.calendar_db)
                 if trip_info is not None:
                     self._name = f"{self._name} to {trip_info.trip_headsign}"
-                self._arrival_detail[HEADSIGN_PRETTY] = trip_info.trip_headsign
-                self._arrival_detail[TRIP_ID_PRETTY] = trip_info.trip_id
+                    self._arrival_detail[HEADSIGN_PRETTY] = trip_info.trip_headsign
+                    self._arrival_detail[TRIP_ID_PRETTY] = trip_info.trip_id
         else:
             self._attr_native_value = None
         self.async_write_ha_state()
