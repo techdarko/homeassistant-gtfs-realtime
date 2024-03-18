@@ -67,7 +67,7 @@ This software may work for other GTFS realtime providers, but has not been teste
 
 ## Frontend
 
-Example frontend card configs can be found in [example/fontend.yaml](example/frontend.yaml).
+Example frontend card configs can be found in [example/frontend.yaml](example/frontend.yaml).
 
 ## Sensors
 
