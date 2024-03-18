@@ -59,8 +59,14 @@ def subway(route_ids: Iterable[str], stop_ids: Iterable[str], api_key: str = "",
     print(f"Icons:   {route_icons}", file=sys.stderr)
     print(f"API Key: {'***' if api_key else 'None'}", file=sys.stderr)
 
-    ssi_db = StationStopInfoDatabase([STATIC_REGULAR, STATIC_SUPPLEMENTAL])
-    ti_db = TripInfoDatabase([STATIC_REGULAR, STATIC_SUPPLEMENTAL])
+    try:
+        ssi_db = StationStopInfoDatabase([STATIC_REGULAR, STATIC_SUPPLEMENTAL])
+    except:
+        ssi_db = StationStopInfoDatabase([])
+    try:
+        ti_db = TripInfoDatabase([STATIC_REGULAR, STATIC_SUPPLEMENTAL])
+    except:
+        ti_db = TripInfoDatabase([])
 
     # TODO add more robust route checker that to gtfs_station_stop library
     valid_route_ids = {ti.route_id for ti in ti_db._trip_infos.values()}
@@ -94,13 +100,15 @@ def subway(route_ids: Iterable[str], stop_ids: Iterable[str], api_key: str = "",
             sb_stop_id = stop_id + "S"
 
         if nb_stop_id is not None:
-            gtfs_config[f"sensor northbound {ssi_db[nb_stop_id].name}"] = [{
+            stop = ssi_db._station_stop_infos.get(nb_stop_id)
+            gtfs_config[f"sensor northbound {stop.name if stop is not None else nb_stop_id}"] = [{
                 PLATFORM: DOMAIN,
                 STOP_ID: f"{nb_stop_id}"
             }]
 
         if sb_stop_id is not None:
-            gtfs_config[f"sensor southbound {ssi_db[sb_stop_id].name}"] = [{
+            stop = ssi_db._station_stop_infos.get(sb_stop_id)
+            gtfs_config[f"sensor southbound {stop.name if stop is not None else sb_stop_id}"] = [{
                 PLATFORM: DOMAIN,
                 STOP_ID: f"{sb_stop_id}"
             }]
