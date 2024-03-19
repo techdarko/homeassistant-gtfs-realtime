@@ -72,9 +72,9 @@ def setup_platform(
                     AlertSensor(
                         coordinator,
                         route_status,
-                        None,
                         i,
                         hass.config.language,
+                        None
                     )
                     for i in range(alert_limit)
                 ]
@@ -92,14 +92,13 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
         self,
         coordinator: GtfsRealtimeCoordinator,
         informed_entity: StationStop | RouteStatus,
-        station_stop_info: StationStopInfo | None,
         idx: int,
-        language: str,
+        language: str = "",
+        station_stop_info: StationStopInfo | None = None,
     ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
         self.informed_entity = informed_entity
-        self.station_stop_info = station_stop_info
         self.language = language
         self._name: str = f"{station_stop_info.name if station_stop_info is not None else informed_entity.id} Service Alerts"
         self._attr_is_on = False
@@ -116,9 +115,8 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
     def extra_state_attributes(self) -> dict[str, str]:
         """Explanation of Alerts for a given Stop ID."""
         return self._alert_detail
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
+    
+    def update(self) -> None:
         alerts = self.informed_entity.alerts
         if len(alerts) == 0:
             self._attr_is_on = False
@@ -131,3 +129,7 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
                 self.language, ""
             )
         self.async_write_ha_state()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        self.update()

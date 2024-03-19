@@ -16,7 +16,7 @@ gtfs_realtime:
   route_icons: /local/NYCT_Bullets
 
 # the sensor config below will set up arrival notifications for
-# northbound and southbound 14th St-Union Sqare L trains as well
+# northbound and southbound 14th St-Union Square L trains as well
 # as service alerts for L trains
 
 sensor northbound union-sq:
