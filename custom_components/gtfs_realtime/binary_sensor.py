@@ -19,7 +19,6 @@ import voluptuous as vol
 from .const import (
     ALERT_LIMIT,
     COORDINATOR_REALTIME,
-    COORDINATOR_STATIC,
     DESCRIPTION_PRETTY,
     DOMAIN,
     HEADER_PRETTY,
@@ -34,8 +33,7 @@ PLATFORM_SCHEMA = BINARY_SENSOR_PLATFORM_SCHEMA.extend(
         vol.Required(
             vol.Any(ROUTE_ID, STOP_ID),
             msg=f"Must specify at least one of ['{ROUTE_ID}', 'f{STOP_ID}']",
-        ): cv.string,
-        vol.Optional(ALERT_LIMIT, default=4): int
+        ): cv.string
     }
 )
 
@@ -58,11 +56,9 @@ def setup_platform(
                     AlertSensor(
                         coordinator,
                         station_stop,
-                        ssi_db[station_stop.id],
-                        i,
                         hass.config.language,
+                        ssi_db[station_stop.id],
                     )
-                    for i in range(alert_limit)
                 ]
             )
         elif ROUTE_ID in config:
@@ -72,11 +68,9 @@ def setup_platform(
                     AlertSensor(
                         coordinator,
                         route_status,
-                        i,
                         hass.config.language,
                         None
                     )
-                    for i in range(alert_limit)
                 ]
             )
 
@@ -92,7 +86,6 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
         self,
         coordinator: GtfsRealtimeCoordinator,
         informed_entity: StationStop | RouteStatus,
-        idx: int,
         language: str = "",
         station_stop_info: StationStopInfo | None = None,
     ) -> None:
@@ -102,9 +95,8 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
         self.language = language
         self._name: str = f"{station_stop_info.name if station_stop_info is not None else informed_entity.id} Service Alerts"
         self._attr_is_on = False
-        self._idx = idx
         self._alert_detail: dict[str, str] = AlertSensor.CLEAN_ALERT_DATA
-        self._attr_unique_id = f"alert_{informed_entity.id}_{self._idx}"
+        self._attr_unique_id = f"alert_{informed_entity.id}"
 
     @property
     def name(self) -> str | None:
@@ -120,14 +112,16 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
         alerts = self.informed_entity.alerts
         if len(alerts) == 0:
             self._attr_is_on = False
-        elif len(alerts) > self._idx:
+            self._alert_detail = {}
+        elif len(alerts) > 0:
             self._attr_is_on = True
-            self._alert_detail[HEADER_PRETTY] = alerts[self._idx].header_text.get(
-                self.language, ""
-            )
-            self._alert_detail[DESCRIPTION_PRETTY] = alerts[self._idx].description_text.get(
-                self.language, ""
-            )
+            for i, alert in enumerate(alerts):
+                self._alert_detail[f"{HEADER_PRETTY}{f" {i}" if i > 0 else ""}"] = alert.header_text.get(
+                    self.language, ""
+                )
+                self._alert_detail[f"{DESCRIPTION_PRETTY}{f" {i}" if i > 0 else ""}"] = alert.description_text.get(
+                    self.language, ""
+                )
         self.async_write_ha_state()
 
     @callback
