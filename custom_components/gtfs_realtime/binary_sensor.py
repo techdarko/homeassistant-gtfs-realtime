@@ -1,4 +1,5 @@
 """Platform for binary sensor integration."""
+
 from __future__ import annotations
 
 from gtfs_station_stop.route_status import RouteStatus
@@ -17,7 +18,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 import voluptuous as vol
 
 from .const import (
-    ALERT_LIMIT,
     COORDINATOR_REALTIME,
     DESCRIPTION_PRETTY,
     DOMAIN,
@@ -26,7 +26,7 @@ from .const import (
     SSI_DB,
     STOP_ID,
 )
-from .coordinator import GtfsRealtimeCoordinator, GtfsStaticCoordinator
+from .coordinator import GtfsRealtimeCoordinator
 
 PLATFORM_SCHEMA = BINARY_SENSOR_PLATFORM_SCHEMA.extend(
     {
@@ -45,7 +45,6 @@ def setup_platform(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the sensor platform."""
-    alert_limit: int = config.get(ALERT_LIMIT, 4)
     coordinator: GtfsRealtimeCoordinator = hass.data[DOMAIN][COORDINATOR_REALTIME]
     if discovery_info is None:
         if STOP_ID in config:
@@ -64,14 +63,7 @@ def setup_platform(
         elif ROUTE_ID in config:
             route_status = RouteStatus(config[ROUTE_ID], coordinator.hub)
             add_entities(
-                [
-                    AlertSensor(
-                        coordinator,
-                        route_status,
-                        hass.config.language,
-                        None
-                    )
-                ]
+                [AlertSensor(coordinator, route_status, hass.config.language, None)]
             )
 
 
@@ -107,7 +99,7 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
     def extra_state_attributes(self) -> dict[str, str]:
         """Explanation of Alerts for a given Stop ID."""
         return self._alert_detail
-    
+
     def update(self) -> None:
         alerts = self.informed_entity.alerts
         if len(alerts) == 0:
@@ -116,12 +108,12 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
         elif len(alerts) > 0:
             self._attr_is_on = True
             for i, alert in enumerate(alerts):
-                self._alert_detail[f"{HEADER_PRETTY}{f" {i}" if i > 0 else ""}"] = alert.header_text.get(
-                    self.language, ""
+                self._alert_detail[f"{HEADER_PRETTY}{f" {i}" if i > 0 else ""}"] = (
+                    alert.header_text.get(self.language, "")
                 )
-                self._alert_detail[f"{DESCRIPTION_PRETTY}{f" {i}" if i > 0 else ""}"] = alert.description_text.get(
-                    self.language, ""
-                )
+                self._alert_detail[
+                    f"{DESCRIPTION_PRETTY}{f" {i}" if i > 0 else ""}"
+                ] = alert.description_text.get(self.language, "")
         self.async_write_ha_state()
 
     @callback

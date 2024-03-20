@@ -1,4 +1,5 @@
 """GTFS Realtime Coordinator."""
+
 import asyncio
 from collections.abc import Iterable
 from datetime import timedelta
@@ -30,10 +31,15 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
         async with asyncio.timeout(10):
             self.hub.update()
 
+
 class GtfsStaticCoordinator(DataUpdateCoordinator):
     """GTFS Static Update Coordinator. Polls Static Data Endpoints for new data on a slower basis."""
 
-    def __init__(self, hass: HomeAssistant, gtfs_static_zip: Iterable[os.PathLike] | os.PathLike | None = None) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        gtfs_static_zip: Iterable[os.PathLike] | os.PathLike | None = None,
+    ) -> None:
         """Initialize the GTFS Update Coordinator to notify all entities upon poll."""
         super().__init__(
             hass, _LOGGER, name="GTFS Static", update_interval=timedelta(days=1)
