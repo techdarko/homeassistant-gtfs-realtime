@@ -1,4 +1,5 @@
 """Platform for sensor integration."""
+
 from __future__ import annotations
 
 import os
@@ -27,7 +28,6 @@ from .const import (
     ARRIVAL_LIMIT,
     CAL_DB,
     COORDINATOR_REALTIME,
-    COORDINATOR_STATIC,
     DOMAIN,
     HEADSIGN_PRETTY,
     ROUTE_ICONS,
@@ -39,10 +39,9 @@ from .const import (
 )
 from .coordinator import GtfsRealtimeCoordinator
 
-PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend({
-    vol.Required(STOP_ID): cv.string,
-    vol.Optional(ARRIVAL_LIMIT, default=4): int
-    })
+PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend(
+    {vol.Required(STOP_ID): cv.string, vol.Optional(ARRIVAL_LIMIT, default=4): int}
+)
 
 
 def setup_platform(
@@ -73,7 +72,8 @@ def setup_platform(
                         route_icons=route_icons,
                     )
                     for i in range(arrival_limit)
-                ], update_before_add=True
+                ],
+                update_before_add=True,
             )
 
 
@@ -107,7 +107,7 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         self.calendar_db = calendar_db
         self.route_icons = route_icons
 
-        self._name = self._get_station_ref()
+        self._name = f"{self._idx + 1}: {self._get_station_ref()}"
         self._attr_unique_id = f"arrival_{self.station_stop.id}_{self._idx}"
         self._attr_suggested_display_precision = 0
         self._attr_suggested_unit_of_measurement = UnitOfTime.MINUTES
@@ -124,36 +124,38 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
     def name(self) -> str:
         """Name of the station from static data or else the Stop ID."""
         return self._name
-    
-    
+
     @property
     def extra_state_attributes(self) -> dict[str, str]:
         """Explanation of Alerts for a given Stop ID."""
         return self._arrival_detail
-    
+
     @property
     def entity_picture(self) -> str | None:
-        return str(
-                Path(self.route_icons) / (self._arrival_detail[ROUTE_ID] + ".svg")
-            ) if self.route_icons is not None and self._arrival_detail.get(ROUTE_ID) is not None else None
-        
+        return (
+            str(Path(self.route_icons) / (self._arrival_detail[ROUTE_ID] + ".svg"))
+            if self.route_icons is not None
+            and self._arrival_detail.get(ROUTE_ID) is not None
+            else None
+        )
+
     @property
     def icon(self) -> str:
         return "mdi:bus-clock"
 
-    
     def update(self) -> None:
         time_to_arrivals = sorted(self.station_stop.get_time_to_arrivals())
-        self._name = self._get_station_ref()
         if len(time_to_arrivals) > self._idx:
             time_to_arrival: Arrival = time_to_arrivals[self._idx]
-            self._attr_native_value = max(time_to_arrival.time, 0) # do not allow negative numbers
+            self._attr_native_value = max(
+                time_to_arrival.time, 0
+            )  # do not allow negative numbers
             self._arrival_detail[ROUTE_ID] = time_to_arrival.route
-            self._name = f"{time_to_arrival.route} {self._name}"
             if self.trip_info_db is not None:
-                trip_info = self.trip_info_db.get_close_match(time_to_arrival.trip, self.calendar_db)
+                trip_info = self.trip_info_db.get_close_match(
+                    time_to_arrival.trip, self.calendar_db
+                )
                 if trip_info is not None:
-                    self._name = f"{self._name} to {trip_info.trip_headsign}"
                     self._arrival_detail[HEADSIGN_PRETTY] = trip_info.trip_headsign
                     self._arrival_detail[TRIP_ID_PRETTY] = trip_info.trip_id
         else:

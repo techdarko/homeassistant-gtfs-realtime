@@ -1,13 +1,7 @@
 """The GTFS Realtime integration."""
 # GTFS Station Stop Feed Subject serves as the data hub for the integration
 
-import calendar
-from pathlib import Path
-
-from gtfs_station_stop.calendar import Calendar
 from gtfs_station_stop.feed_subject import FeedSubject
-from gtfs_station_stop.station_stop_info import StationStopInfoDatabase
-from gtfs_station_stop.trip_info import TripInfoDatabase
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
