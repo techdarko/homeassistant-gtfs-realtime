@@ -1,5 +1,5 @@
 
-![GTFS Realtime](resources/logo.svg)
+![GTFS Realtime](logo.svg)
 # GTFS Realtime for Home Assistant
 
 ## Installation
@@ -20,42 +20,27 @@ Copy files in [custom_components/gtfs_realtime](custom_components/gtfs_realtime/
 
 ## Configuration
 
-Configuration is currently supported only through [configuration.yaml]().
+Once the integration is installed, the configure the integration through Settings >> Devices and Services, and use "Add Integration".  Select GTFS Realtime and follow the instructions in the user interface.
 
-An example configuration file is provided in [example/configuration.yaml](example/configuration.yaml).
+You can select a supported provider or configure it manually. 
 
-### Static GTFS Data
+### Realtime Feed URLs
 
-Static GTFS data is provided as a .zip file containing a number of .txt files representing a relational database.
-The file can either specify a URL from the GTFS service provider, and it will be re-downloaded every day, or it can be a local file. 
+These are the URLs that will be queried for realtime updates. Using a preconfigured provider may include feeds you do not need, these can be deleted here to improve performance.
 
-GTFS static info does not change as rapidly as realtime data, but will need to be refreshed.  For accurate headsigns and trip metadata, it is best to specify the provider's URL
+### Static Feed URLs
 
-```
-gtfs_realtime:
-  api_key: !secret gtfs_realtime_api_key
-  url_endpoints:
-   - "https://gtfs.example.com/feed1"
-   - "https://gtfs.example.com/feed2"
-   - "https://gtfs.example.com/alerts"
-  gtfs_static_data: 
-   - "https://gtfs.example.com/static.zip"
-   - "https://gtfs.example.com/static_supplemented.zip"
-```
-
-### Feed URLs
-
-A list of feed URLs should be provided.
+Less frequently updated data will be provided as one or more .zip files. Include the URL your provider supplies these files at. It will be updated daily. 
 
 ### API Key
 
-If your provider requires an API Key, include it under `gtfs_realtime.api_key`. It is recommended to use the `secrets.yaml` file to store it and reference it with `!secret`. 
+If your provider requires an API Key. It must be included. Otherwise, leave this blank. The API Key will be supplied as a header under the "X-Api-Key" field.
 
-### New York City Subway Data
+### Route Icons
 
-A sample configuration for New York City Subways is provided in [example/nyct_configuration.yaml](example/nyct_configuration.yaml).
+Optionally route icons can be included.  The integration will default to using MDI icons otherwise. For NYC Subway integrations, and other supported integrations, the resources folder may contain valid route icons to use.  
 
-Obtain an API key [here](https://api.mta.info/)
+For custom use, a URL must be provided that includes up to three Python format braces for `{route_id}`, `{route_color}` and `{route_text_color}`. At minimum, `{route_id}` must be provided.  These braces should be placed in the input string and conform to the requirements in Python'a [str.format()](https://docs.python.org/3/library/stdtypes.html#str.format) method. 
 
 #### Resources
 
@@ -63,17 +48,17 @@ The [resources/NYCT_Bullets](resources/NYCT_Bullets/) folder contains ready-to-u
 
 ### Other Transit Systems
 
-This software may work for other GTFS realtime providers, but has not been tested. 
+This software may work for other GTFS realtime providers, but has not been tested. There is no guarantee that providers--even if included in this repository--will work--or that changes in provider APIs will not cause breakages. 
 
 ## Frontend
 
-Example frontend card configs can be found in [example/fontend.yaml](example/frontend.yaml).
+Example frontend card configs can be found in [example/frontend.yaml](example/frontend.yaml).
 
 ## Sensors
 
 ### Arrival Sensor
 
-The number of sensors can be specified with the `sensor.arrival_limit` key in the yaml configuration. By default this is 4.  
+The number of sensors can be specified during setup. By default this is 4.  
 
 Sensors will indicate the 1st, 2nd, 3rd, ... etc. arrivals for a given `stop_id` ordered by shortest time.  If no scheduled trips exist for a given arrival ordinal, it will take on the state "Unknown". That is to say, the first sensor will always have the shortest time to arrival, the second sensor will have the second shortest time to arrival, and so on. 
 

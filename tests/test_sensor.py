@@ -19,8 +19,8 @@ NOW = datetime(2024, 3, 17, 23, 0, 0).replace(tzinfo=timezone.utc)
 @pytest.fixture
 def arrival_sensor(hass: HomeAssistant) -> ArrivalSensor:
     """Fixture for a basic arrival sensor."""
-    feed_subject = FeedSubject("", [])
-    station_stop = StationStop("1", feed_subject)
+    feed_subject = FeedSubject([])
+    station_stop = StationStop("STATION", feed_subject)
     station_stop.arrivals = [
         Arrival((NOW + timedelta(minutes=24)).timestamp(), "A", "A_trip"),
         Arrival((NOW + timedelta(minutes=36)).timestamp(), "B", "B_trip"),
@@ -40,7 +40,7 @@ def test_create_entity(arrival_sensor):
     """Tests entity construction."""
     # Created by the fixture
     assert arrival_sensor.state is None
-    assert arrival_sensor.name == "1"
+    assert arrival_sensor.name == "1: STATION"
 
 
 @freeze_time(NOW)
