@@ -1,5 +1,5 @@
 
-![GTFS Realtime](logo.svg)
+![GTFS Realtime](resources/logo.svg)
 # GTFS Realtime for Home Assistant
 
 ## Installation
@@ -34,7 +34,7 @@ Less frequently updated data will be provided as one or more .zip files. Include
 
 ### API Key
 
-If your provider requires an API Key. It must be included. Otherwise, leave this blank. The API Key will be supplied as a header under the "X-Api-Key" field.
+If your provider requires an API Key. It must be included. Otherwise, leave this blank. The API Key will be supplied as a header under the "api_key" field.
 
 ### Route Icons
 
@@ -42,9 +42,11 @@ Optionally route icons can be included.  The integration will default to using M
 
 For custom use, a URL must be provided that includes up to three Python format braces for `{route_id}`, `{route_color}` and `{route_text_color}`. At minimum, `{route_id}` must be provided.  These braces should be placed in the input string and conform to the requirements in Python'a [str.format()](https://docs.python.org/3/library/stdtypes.html#str.format) method. 
 
+See [Digital Ocean Route Icons](https://github.com/bcpearce/Digital-Ocean-Route-Icons) for a project using Digital Ocean functions to provide a dynamic icon using the GTFS provider's Route Color and Route Text Color. 
+
 #### Resources
 
-The [resources/NYCT_Bullets](resources/NYCT_Bullets/) folder contains ready-to-use SVG files for customizing arrival icons provided by Wikimedia Commons.
+The [resources/NYCT_Bullets](resources/NYCT_Bullets/) folder contains ready-to-use SVG files for customizing arrival icons for the New York City Subway, provided by Wikimedia Commons.
 
 ### Other Transit Systems
 
@@ -66,7 +68,7 @@ Raw sensor data is provided in seconds. Minutes are the recommended unit.
 
 ### Alert Sensor
 
-Alert sensors can be setup for either a `stop_id` or a `route_id`. The [example/frontend.yaml](example/frontend.yaml) file shows how to set up conditional cards that display only if an alert is active. The alert sensor will switch to the "Problem" state if an alert is active for a given station or route. This can be used in automations, such as turning on an indicator LED when an alert becomes active. 
+Alert sensors can be setup for a `route_id`. The [example/frontend.yaml](example/frontend.yaml) file shows how to set up conditional cards that display only if an alert is active. The alert sensor will switch to the "Problem" state if an alert is active for a given station or route. This can be used in automations, such as turning on an indicator LED when an alert becomes active. 
 
 ## GTFS Station Stop
 
