@@ -10,7 +10,7 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/bcpearce/homeassistant-gtfs-realtime/issues",
   "requirements": [
-    "gtfs_station_stop==0.7.0b5"
+    "gtfs_station_stop==0.8.0"
   ],
-  "version": "0.1.5"
+  "version": "0.1.6"
 }
