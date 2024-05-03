@@ -1,0 +1,4 @@
+{
+  "code": "2999e882bcb64375785fac718855e870",
+  "error": "Too many requests in the last minute (count: 365, allowed: 360)."
+}
