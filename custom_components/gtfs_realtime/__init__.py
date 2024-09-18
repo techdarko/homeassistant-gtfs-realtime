@@ -1,6 +1,7 @@
 """The GTFS Realtime integration."""
 # GTFS Station Stop Feed Subject serves as the data hub for the integration
 
+from datetime import timedelta
 from typing import Any
 
 from gtfs_station_stop.feed_subject import FeedSubject
@@ -18,13 +19,12 @@ from .const import (
     CONF_ROUTE_ICONS,
     CONF_URL_ENDPOINTS,
     COORDINATOR_REALTIME,
-    COORDINATOR_STATIC,
     DOMAIN,
     RTI_DB,
     SSI_DB,
     TI_DB,
 )
-from .coordinator import GtfsRealtimeCoordinator, GtfsStaticCoordinator
+from .coordinator import GtfsRealtimeCoordinator
 
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
 
@@ -41,16 +41,17 @@ async def _async_create_gtfs_update_hub(hass: HomeAssistant, config: dict[str, A
     route_icons = config.get(CONF_ROUTE_ICONS)  # optional
     # Attempt to perform an update to verify configuration
     await hub.async_update()
-    coordinator_realtime = GtfsRealtimeCoordinator(hass, hub)
-    coordinator_static = GtfsStaticCoordinator(hass, config[CONF_GTFS_STATIC_DATA])
-    await coordinator_static._async_update_data()
+    coordinator_realtime = GtfsRealtimeCoordinator(
+        hass, hub, config[CONF_GTFS_STATIC_DATA], static_timedelta=timedelta(hours=24)
+    )
+    # Update the static data for the coordinator before the first update
+    await coordinator_realtime.async_update_static_data()
     hass.data[DOMAIN] = {
         COORDINATOR_REALTIME: coordinator_realtime,
-        COORDINATOR_STATIC: coordinator_static,
-        CAL_DB: coordinator_static.calendar,
-        SSI_DB: coordinator_static.station_stop_info_db,
-        TI_DB: coordinator_static.trip_info_db,
-        RTI_DB: coordinator_static.route_into_db,
+        CAL_DB: coordinator_realtime.calendar,
+        SSI_DB: coordinator_realtime.station_stop_info_db,
+        TI_DB: coordinator_realtime.trip_info_db,
+        RTI_DB: coordinator_realtime.route_info_db,
         CONF_ROUTE_ICONS: route_icons,
     }
     if CONF_ROUTE_ICONS in config:
