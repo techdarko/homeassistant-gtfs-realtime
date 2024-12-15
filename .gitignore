@@ -160,17 +160,23 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-.vscode/
+.vscode/*
+!.vscode/launch.json
 
 # GTFS Station Stop may be cloned locally for testing
 gtfs-station-stop/
 
-# Ignore hass config if run from root
+# Ignore hass config
 config/
+
+# Ignore files created running debugger 
+*.sqlite
 .HA_VERSION
-configuration.yaml
-gtfs_static_cache.sqlite
-home-assistant_v2.db
-home-assistant.log*
 .storage/
 blueprints/
+configuration.yaml
+home-assistant.log.1
+home-assistant.log.fault
+home-assistant_v2.db
+home-assistant_v2.db-shm
+home-assistant_v2.db-wal

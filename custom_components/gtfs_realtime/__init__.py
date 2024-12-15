@@ -1,64 +1,66 @@
 """The GTFS Realtime integration."""
 # GTFS Station Stop Feed Subject serves as the data hub for the integration
 
+from datetime import timedelta
+from typing import Any
+
 from gtfs_station_stop.feed_subject import FeedSubject
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.typing import ConfigType
 import voluptuous as vol
 
+from custom_components.gtfs_realtime.config_flow import DOMAIN_SCHEMA
+
 from .const import (
-    API_KEY,
     CAL_DB,
+    CONF_API_KEY,
+    CONF_GTFS_STATIC_DATA,
+    CONF_ROUTE_ICONS,
+    CONF_URL_ENDPOINTS,
     COORDINATOR_REALTIME,
-    COORDINATOR_STATIC,
     DOMAIN,
-    GTFS_STATIC_DATA,
-    ROUTE_ICONS,
+    RTI_DB,
     SSI_DB,
     TI_DB,
-    URL_ENDPOINTS,
 )
-from .coordinator import GtfsRealtimeCoordinator, GtfsStaticCoordinator
+from .coordinator import GtfsRealtimeCoordinator
 
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
 
 CONFIG_SCHEMA = vol.Schema(
-    {
-        DOMAIN: vol.Schema(
-            {
-                vol.Optional(API_KEY): cv.string,
-                vol.Required(URL_ENDPOINTS): vol.All([cv.url]),
-                vol.Optional(GTFS_STATIC_DATA): vol.All([cv.url]),
-                vol.Optional(ROUTE_ICONS): cv.path,
-            }
-        )
-    },
+    {DOMAIN: DOMAIN_SCHEMA},
     extra=vol.ALLOW_EXTRA,
 )
 
 
-def setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up GTFS Realtime Feed Subject for use by all sensors."""
-    hub = FeedSubject(config[DOMAIN][API_KEY], config[DOMAIN][URL_ENDPOINTS])
-    gtfs_static_zip = config[DOMAIN][GTFS_STATIC_DATA]
-    route_icons = config[DOMAIN].get(ROUTE_ICONS)  # optional
+async def _async_create_gtfs_update_hub(hass: HomeAssistant, config: dict[str, Any]):
+    hub = FeedSubject(
+        config[CONF_URL_ENDPOINTS], headers={"api_key": config[CONF_API_KEY]}
+    )
+    route_icons = config.get(CONF_ROUTE_ICONS)  # optional
     # Attempt to perform an update to verify configuration
-    hub.update()
-    coordinator_realtime = GtfsRealtimeCoordinator(hass, hub)
-    coordinator_static = GtfsStaticCoordinator(hass, gtfs_static_zip)
+    await hub.async_update()
+    coordinator_realtime = GtfsRealtimeCoordinator(
+        hass, hub, config[CONF_GTFS_STATIC_DATA], static_timedelta=timedelta(hours=24)
+    )
+    # Update the static data for the coordinator before the first update
+    await coordinator_realtime.async_update_static_data()
     hass.data[DOMAIN] = {
         COORDINATOR_REALTIME: coordinator_realtime,
-        COORDINATOR_STATIC: coordinator_static,
-        CAL_DB: coordinator_static.calendar,
-        SSI_DB: coordinator_static.station_stop_info_db,
-        TI_DB: coordinator_static.trip_info_db,
-        ROUTE_ICONS: route_icons,
+        CAL_DB: coordinator_realtime.calendar,
+        SSI_DB: coordinator_realtime.station_stop_info_db,
+        TI_DB: coordinator_realtime.trip_info_db,
+        RTI_DB: coordinator_realtime.route_info_db,
+        CONF_ROUTE_ICONS: route_icons,
     }
-    if ROUTE_ICONS in config[DOMAIN]:
-        hass.data[DOMAIN][ROUTE_ICONS] = config[DOMAIN][ROUTE_ICONS]
+    if CONF_ROUTE_ICONS in config:
+        hass.data[DOMAIN][CONF_ROUTE_ICONS] = config[CONF_ROUTE_ICONS]
+    return True
 
-    for platform in PLATFORMS:
-        hass.helpers.discovery.load_platform(platform, DOMAIN, {}, config)
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up GTFS Realtime Feed Subject for use by all sensors."""
+    await _async_create_gtfs_update_hub(hass, entry.data)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
