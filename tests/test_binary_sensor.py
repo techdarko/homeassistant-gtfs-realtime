@@ -15,7 +15,7 @@ from custom_components.gtfs_realtime.coordinator import GtfsRealtimeCoordinator
 @pytest.fixture
 def alert_sensor(hass: HomeAssistant) -> AlertSensor:
     """Fixture for a basic alert sensor."""
-    feed_subject = FeedSubject("", [])
+    feed_subject = FeedSubject([])
     route_status = RouteStatus("1", feed_subject)
     route_status.alerts = [
         Alert(datetime.datetime.max, {"en": "Alert"}, {"en": "This is an Alert"}),
@@ -52,8 +52,8 @@ def test_update(alert_sensor):
     alert_sensor.update()
     assert alert_sensor.state == "on"
     assert alert_sensor.extra_state_attributes["Header"] == "Alert"
-    assert alert_sensor.extra_state_attributes["Header 1"] == "Another Alert"
+    assert alert_sensor.extra_state_attributes["Header 2"] == "Another Alert"
     assert alert_sensor.extra_state_attributes["Description"] == "This is an Alert"
     assert (
-        alert_sensor.extra_state_attributes["Description 1"] == "This is another Alert"
+        alert_sensor.extra_state_attributes["Description 2"] == "This is another Alert"
     )

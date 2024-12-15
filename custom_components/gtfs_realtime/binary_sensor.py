@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from gtfs_station_stop.route_status import RouteStatus
 from gtfs_station_stop.station_stop import StationStop
-from gtfs_station_stop.station_stop_info import StationStopInfo, StationStopInfoDatabase
+from gtfs_station_stop.station_stop_info import StationStopInfo
 from homeassistant.components.binary_sensor import (
     PLATFORM_SCHEMA as BINARY_SENSOR_PLATFORM_SCHEMA,
     BinarySensorDeviceClass,
@@ -18,12 +18,12 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 import voluptuous as vol
 
 from .const import (
+    CONF_ROUTE_IDS,
     COORDINATOR_REALTIME,
     DESCRIPTION_PRETTY,
     DOMAIN,
     HEADER_PRETTY,
     ROUTE_ID,
-    SSI_DB,
     STOP_ID,
 )
 from .coordinator import GtfsRealtimeCoordinator
@@ -38,7 +38,7 @@ PLATFORM_SCHEMA = BINARY_SENSOR_PLATFORM_SCHEMA.extend(
 )
 
 
-def setup_platform(
+async def async_setup_entry(
     hass: HomeAssistant,
     config: ConfigType,
     add_entities: AddEntitiesCallback,
@@ -47,23 +47,17 @@ def setup_platform(
     """Set up the sensor platform."""
     coordinator: GtfsRealtimeCoordinator = hass.data[DOMAIN][COORDINATOR_REALTIME]
     if discovery_info is None:
-        if STOP_ID in config:
-            ssi_db: StationStopInfoDatabase = hass.data[DOMAIN][SSI_DB]
-            station_stop = StationStop(config[STOP_ID], coordinator.hub)
+        if CONF_ROUTE_IDS in config.data:
             add_entities(
                 [
                     AlertSensor(
                         coordinator,
-                        station_stop,
+                        RouteStatus(route_id, coordinator.hub),
                         hass.config.language,
-                        ssi_db[station_stop.id],
+                        None,
                     )
+                    for route_id in config.data[CONF_ROUTE_IDS]
                 ]
-            )
-        elif ROUTE_ID in config:
-            route_status = RouteStatus(config[ROUTE_ID], coordinator.hub)
-            add_entities(
-                [AlertSensor(coordinator, route_status, hass.config.language, None)]
             )
 
 
@@ -102,17 +96,17 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
 
     def update(self) -> None:
         alerts = self.informed_entity.alerts
+        self._alert_detail = {}
         if len(alerts) == 0:
             self._attr_is_on = False
-            self._alert_detail = {}
         elif len(alerts) > 0:
             self._attr_is_on = True
             for i, alert in enumerate(alerts):
-                self._alert_detail[f"{HEADER_PRETTY}{f" {i}" if i > 0 else ""}"] = (
+                self._alert_detail[f"{HEADER_PRETTY}{f" {i + 1}" if i > 0 else ""}"] = (
                     alert.header_text.get(self.language, "")
                 )
                 self._alert_detail[
-                    f"{DESCRIPTION_PRETTY}{f" {i}" if i > 0 else ""}"
+                    f"{DESCRIPTION_PRETTY}{f" {i + 1}" if i > 0 else ""}"
                 ] = alert.description_text.get(self.language, "")
         self.async_write_ha_state()
 

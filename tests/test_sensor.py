@@ -19,7 +19,7 @@ NOW = datetime(2024, 3, 17, 23, 0, 0).replace(tzinfo=timezone.utc)
 @pytest.fixture
 def arrival_sensor(hass: HomeAssistant) -> ArrivalSensor:
     """Fixture for a basic arrival sensor."""
-    feed_subject = FeedSubject("", [])
+    feed_subject = FeedSubject([])
     station_stop = StationStop("STATION", feed_subject)
     station_stop.arrivals = [
         Arrival((NOW + timedelta(minutes=24)).timestamp(), "A", "A_trip"),
