@@ -165,5 +165,12 @@ cython_debug/
 # GTFS Station Stop may be cloned locally for testing
 gtfs-station-stop/
 
-# Ignore hass config
+# Ignore hass config if run from root
 config/
+.HA_VERSION
+configuration.yaml
+gtfs_static_cache.sqlite
+home-assistant_v2.db
+home-assistant.log*
+.storage/
+blueprints/
