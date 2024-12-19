@@ -51,9 +51,9 @@ def test_update(alert_sensor):
     """
     alert_sensor.update()
     assert alert_sensor.state == "on"
-    assert alert_sensor.extra_state_attributes["Header"] == "Alert"
-    assert alert_sensor.extra_state_attributes["Header 2"] == "Another Alert"
-    assert alert_sensor.extra_state_attributes["Description"] == "This is an Alert"
+    assert alert_sensor.extra_state_attributes["header_0"] == "Alert"
+    assert alert_sensor.extra_state_attributes["header_1"] == "Another Alert"
+    assert alert_sensor.extra_state_attributes["description_0"] == "This is an Alert"
     assert (
-        alert_sensor.extra_state_attributes["Description 2"] == "This is another Alert"
+        alert_sensor.extra_state_attributes["description_1"] == "This is another Alert"
     )

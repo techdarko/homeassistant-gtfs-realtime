@@ -3,13 +3,24 @@
 DOMAIN = "gtfs_realtime"
 
 CONF_GTFS_PROVIDER = "gtfs_provider"
+CONF_GTFS_PROVIDER_ID = "gtfs_provider_id"
 CONF_API_KEY = "api_key"
 CONF_GTFS_STATIC_DATA = "gtfs_static_data"
+CONF_STATIC_SOURCES_UPDATE_FREQUENCY = "static_sources_update_frequency"
+CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT = 2  # hours
 CONF_URL_ENDPOINTS = "url_endpoints"
 CONF_ROUTE_ICONS = "route_icons"
 CONF_ROUTE_IDS = "route_ids"
 CONF_STOP_IDS = "stop_ids"
 CONF_ARRIVAL_LIMIT = "arrival_limit"
+CONF_VERSION = 2
+CONF_MINOR_VERSION = 0
+
+# ERRORS
+CONF_SELECT_AT_LEAST_ONE_STOP_OR_ROUTE = "select_at_least_one_stop_or_route"
+
+FEEDS_URL = "https://gist.githubusercontent.com/bcpearce/cc60c18f4022c4a11c460c5ccd2ec158/raw/feeds.json"
+
 STOP_ID = "stop_id"
 ROUTE_ID = "route_id"
 

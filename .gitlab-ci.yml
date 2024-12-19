@@ -6,7 +6,7 @@ stages:
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   PRE_COMMIT_HOME: "/.cache/pre-commit"
-  PYTHON_IMAGE: python:3.12
+  PYTHON_IMAGE: python:3.13
 
 include:
   - local: "/template/.python-container.yml"

@@ -15,6 +15,8 @@ from gtfs_station_stop.trip_info import TripInfoDatabase
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
+from .const import CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -29,9 +31,6 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
         **kwargs,
     ) -> None:
         """Initialize the GTFS Update Coordinator to notify all entities upon poll."""
-        self.static_timedelta: timedelta = kwargs.get(
-            "static_timedelta", timedelta(hours=24)
-        )
         self.realtime_timedelta: timedelta = kwargs.get(
             "realtime_timedelta", timedelta(seconds=60)
         )
@@ -40,6 +39,9 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
             _LOGGER,
             name="GTFS Realtime",
             update_interval=self.realtime_timedelta,
+        )
+        self.static_timedelta: dict[os.PathLike, timedelta] = kwargs.get(
+            "static_timedelta", dict[os.PathLike, timedelta]()
         )
         self.hub = feed_subject
         self.gtfs_static_zip = gtfs_static_zip
@@ -52,36 +54,56 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
         self.stop_infos_len: int = 0
         self.trip_infos_len: int = 0
         self.route_infos_len: int = 0
-        self.last_static_update: datetime | None = None
-        _LOGGER.info("Setup GTFS Realtime Update Coordinator")
-        _LOGGER.info(f"Realtime GTFS update interval {self.realtime_timedelta}")
-        _LOGGER.info(f"Static GTFS update interval {self.static_timedelta}")
+        self.last_static_update: dict[os.PathLike, datetime] | None = None
+        _LOGGER.debug("Setup GTFS Realtime Update Coordinator")
+        _LOGGER.debug(f"Realtime GTFS update interval {self.realtime_timedelta}")
+        for uri, delta in self.static_timedelta.items():
+            _LOGGER.info(f"Static GTFS update interval for {uri} is {delta}")
+
+    @classmethod
+    def make_lookup_id(
+        cls, realtime_feed_urls: Iterable[str], gtfs_static_zip: Iterable[str]
+    ) -> tuple[tuple[str]]:
+        return tuple(sorted(realtime_feed_urls)), tuple(sorted(gtfs_static_zip))
+
+    def get_lookup_id(self) -> tuple[tuple[str]]:
+        return tuple(sorted(self.hub.realtime_feed_uris)), tuple(
+            sorted(self.gtfs_static_zip)
+        )
 
     async def _async_update_data(self):
         """Fetch data from API endpoint."""
         await self.hub.async_update()
         # Update the static resource if it is past that timedelta
-        if (
-            self.last_static_update is None
-            or datetime.now() - self.last_static_update > self.static_timedelta
-        ):
-            await self.async_update_static_data()
+        if self.last_static_update is None:
+            targets = self.gtfs_static_zip
+            self.last_static_update = dict[os.PathLike, datetime]()
+        else:
+            targets = [
+                uri
+                for uri, last_update in self.last_static_update.items()
+                if datetime.now() - last_update
+                > self.static_timedelta.get(
+                    uri, CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT
+                )
+            ]
+        await self.async_update_static_data(targets)
 
-    async def async_update_static_data(self):
+    async def async_update_static_data(self, targets):
+        if len(targets) == 0:
+            return
         async with asyncio.TaskGroup() as tg:
             cal_db_task = tg.create_task(
-                async_factory(Calendar, *self.gtfs_static_zip, **self.kwargs)
+                async_factory(Calendar, *targets, **self.kwargs)
             )
             ssi_db_task = tg.create_task(
-                async_factory(
-                    StationStopInfoDatabase, *self.gtfs_static_zip, **self.kwargs
-                )
+                async_factory(StationStopInfoDatabase, *targets, **self.kwargs)
             )
             ti_db_task = tg.create_task(
-                async_factory(TripInfoDatabase, *self.gtfs_static_zip, **self.kwargs)
+                async_factory(TripInfoDatabase, *targets, **self.kwargs)
             )
             rti_db_task = tg.create_task(
-                async_factory(RouteInfoDatabase, *self.gtfs_static_zip, **self.kwargs)
+                async_factory(RouteInfoDatabase, *targets, **self.kwargs)
             )
         if any(
             db is None
@@ -107,15 +129,17 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
             self.stop_infos_len = len(self.station_stop_info_db.station_stop_infos)
             self.trip_infos_len = len(self.trip_info_db.trip_infos)
             self.route_infos_len = len(self.route_info_db.route_infos)
-            _LOGGER.info(
+            _LOGGER.debug(
                 f"GTFS Static Coordinator Initial Update Complete {self.gtfs_static_zip}"
             )
-            _LOGGER.info(f"GTFS Static Coordinator Services: {self.services_len}")
-            _LOGGER.info(
+            _LOGGER.debug(f"GTFS Static Coordinator Services: {self.services_len}")
+            _LOGGER.debug(
                 f"GTFS Static Coordinator Station Stop Infos: {self.stop_infos_len}"
             )
-            _LOGGER.info(f"GTFS Static Coordinator Trip Infos: {self.trip_infos_len}")
-            _LOGGER.info(f"GTFS Static Coordinator Route Infos: {self.route_infos_len}")
+            _LOGGER.debug(f"GTFS Static Coordinator Trip Infos: {self.trip_infos_len}")
+            _LOGGER.debug(
+                f"GTFS Static Coordinator Route Infos: {self.route_infos_len}"
+            )
         else:
             old_services_len = self.services_len
             self.calendar.services = (
@@ -142,37 +166,43 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
             )
             self.route_infos_len = len(self.route_info_db.route_infos)
 
-            _LOGGER.info(
+            _LOGGER.debug(
                 f"GTFS Static Coordinator Merge New Data Update Complete {self.gtfs_static_zip}"
             )
-            _LOGGER.info(
+            _LOGGER.debug(
                 f"GTFS Static Coordinator Services: {old_services_len} -> {self.services_len}"
             )
-            _LOGGER.info(
+            _LOGGER.debug(
                 f"GTFS Static Coordinator Station Stop Infos: {old_stop_infos_len} -> {self.stop_infos_len}"
             )
-            _LOGGER.info(
+            _LOGGER.debug(
                 f"GTFS Static Coordinator Trip Infos: {old_trip_infos_len} -> {self.trip_infos_len}"
             )
-            _LOGGER.info(
+            _LOGGER.debug(
                 f"GTFS Static Coordinator Route Infos: {old_route_infos_len} -> {self.route_infos_len}"
             )
-        self.last_static_update = datetime.now()
 
+        for target in targets:
+            if self.last_static_update is None:
+                self.last_static_update = {target: datetime.now()}
+            else:
+                self.last_static_update[target] = datetime.now()
 
-class GtfsStaticCoordinator(DataUpdateCoordinator):
-    """GTFS Static Update Coordinator. Polls Static Data Endpoints for new data on a slower basis."""
+        if os.environ.get("GTFS_REALTIME_SHOW_MEMORY_USE", "off") == "on":
+            try:
+                from pympler import asizeof
 
-    def __init__(
-        self,
-        hass: HomeAssistant,
-    ) -> None:
-        """Initialize the GTFS Update Coordinator to notify all entities upon poll."""
-        super().__init__(
-            hass, _LOGGER, name="GTFS Static", update_interval=timedelta(days=1)
-        )
-        # Save the resource path to reload periodically
-        _LOGGER.info("Setup GTFS Static Update Coordinator")
-
-    async def _async_update_data(self):
-        """Fetch data from API endpoint."""
+                _LOGGER.debug(
+                    f"Calendar using {asizeof.asizeof(self.calendar) / 2**20:.2f} MB"
+                )
+                _LOGGER.debug(
+                    f"Stations using {asizeof.asizeof(self.station_stop_info_db) / 2**20:.2f} MB"
+                )
+                _LOGGER.debug(
+                    f"Trips using    {asizeof.asizeof(self.trip_info_db) / 2**20:.2f} MB"
+                )
+                _LOGGER.debug(
+                    f"Routes using   {asizeof.asizeof(self.route_info_db) / 2**20:.2f} MB"
+                )
+            except ImportError:
+                """Failed to import pympler for memory usage stats. When using environment variable GTFS_REALTIME_SHOW_MEMORY_USE=on, pympler must be added to the python environment running homeassitant."""

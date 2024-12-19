@@ -8,7 +8,7 @@ from gtfs_station_stop.arrival import Arrival
 from gtfs_station_stop.calendar import Calendar
 from gtfs_station_stop.route_info import RouteInfoDatabase, RouteType
 from gtfs_station_stop.station_stop import StationStop
-from gtfs_station_stop.station_stop_info import StationStopInfo, StationStopInfoDatabase
+from gtfs_station_stop.station_stop_info import StationStopInfo
 from gtfs_station_stop.trip_info import TripInfoDatabase
 from homeassistant.components.sensor import (
     PLATFORM_SCHEMA as SENSOR_PLATFORM_SCHEMA,
@@ -24,22 +24,20 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 import voluptuous as vol
 
+from custom_components.gtfs_realtime import GtfsProviderData
+
 from .const import (
-    CAL_DB,
     CONF_ARRIVAL_LIMIT,
-    CONF_ROUTE_ICONS,
+    CONF_GTFS_STATIC_DATA,
     CONF_STOP_IDS,
-    COORDINATOR_REALTIME,
+    CONF_URL_ENDPOINTS,
     DOMAIN,
     HEADSIGN_PRETTY,
     ROUTE_COLOR_PRETTY,
     ROUTE_ID,
     ROUTE_TEXT_COLOR_PRETTY,
     ROUTE_TYPE_PRETTY,
-    RTI_DB,
-    SSI_DB,
     STOP_ID,
-    TI_DB,
     TRIP_ID_PRETTY,
 )
 from .coordinator import GtfsRealtimeCoordinator
@@ -56,27 +54,31 @@ async def async_setup_entry(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the sensor platform."""
-    coordinator: GtfsRealtimeCoordinator = hass.data[DOMAIN][COORDINATOR_REALTIME]
+    lookup_id = GtfsRealtimeCoordinator.make_lookup_id(
+        realtime_feed_urls=config.data[CONF_URL_ENDPOINTS],
+        gtfs_static_zip=config.data[CONF_GTFS_STATIC_DATA],
+    )
+    provider_data: GtfsProviderData = hass.data[DOMAIN][lookup_id]
     if discovery_info is None:
         if CONF_STOP_IDS in config.data:
-            ssi_db: StationStopInfoDatabase = hass.data[DOMAIN][SSI_DB]
-            ti_db: TripInfoDatabase = hass.data[DOMAIN][TI_DB]
-            cal_db: Calendar = hass.data[DOMAIN][CAL_DB]
-            rti_db: RouteInfoDatabase = hass.data[DOMAIN][RTI_DB]
-            arrival_limit: int = config.data[CONF_ARRIVAL_LIMIT]
-            route_icons: os.PathLike = hass.data[DOMAIN].get(CONF_ROUTE_ICONS)
+            arrival_limit: int = int(round(config.data[CONF_ARRIVAL_LIMIT]))
+            route_icons: os.PathLike = provider_data.rt_icons
             arrival_sensors = []
             for i in range(arrival_limit):
                 for stop_id in config.data[CONF_STOP_IDS]:
                     arrival_sensors.append(
                         ArrivalSensor(
-                            coordinator,
-                            StationStop(stop_id, coordinator.hub),
+                            provider_data.coordinator,
+                            StationStop(stop_id, provider_data.coordinator.hub),
                             i,
-                            ssi_db[stop_id],
-                            ti_db,
-                            cal_db,
-                            rti_db,
+                            (
+                                provider_data.ssi_db.get(stop_id)
+                                if provider_data.ssi_db is not None
+                                else None
+                            ),
+                            provider_data.ti_db,
+                            provider_data.calendar,
+                            provider_data.rti_db,
                             route_icons=route_icons,
                         )
                     )
@@ -106,7 +108,7 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         idx: int,
         station_stop_info: StationStopInfo | None = None,
         trip_info_db: TripInfoDatabase | None = None,
-        calendar_db: Calendar | None = None,
+        calendar: Calendar | None = None,
         route_info_db: RouteInfoDatabase | None = None,
         route_icons: os.PathLike | None = None,
     ) -> None:
@@ -118,7 +120,7 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         # Allowed to be `None`
         self.station_stop_info = station_stop_info
         self.trip_info_db = trip_info_db
-        self.calendar_db = calendar_db
+        self.calendar_db = calendar
         self.route_icons = route_icons
         self.route_info_db = route_info_db
         self.route_type = RouteType.UNKNOWN

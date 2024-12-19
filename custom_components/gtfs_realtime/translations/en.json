@@ -5,7 +5,7 @@
             "user": {
                 "title": "Select a GTFS Provider",
                 "data": {
-                    "gtfs_provider": "GTFS Provider"
+                    "gtfs_provider_id": "GTFS Provider"
                 },
                 "description": "Select a GTFS Provider"
             },
@@ -25,17 +25,48 @@
                 "description": "This form will be pre-populated if you selected a provider in the previous step. Feeds you do not require can be removed to improve sensor update performance."
             },
             "choose_informed_entities": {
+                "title": "Select Route and Stop IDs to create sensor and binary sensor entities.",
                 "data": {
                     "gtfs_provider": "GTFS Provider Name",
                     "route_ids": "Route ID",
                     "stop_ids": "Stop ID",
-                    "arrival_limit": "Arrival Limit"
+                    "arrival_limit": "Arrival Limit"},
+                "sections": {
+                    "static_sources_update_frequency": {
+                        "name": "Static Data Update Frequency",
+                        "description": "Set the duration of time between each update for static data. Check with your GTFS provider for the expected frequency."
+                    }
                 },
                 "data_description": {
                     "route_ids": "Route ID for a GTFS entity to receive service alerts.",
                     "stop_ids": "Stop ID for a GTFS entity to receive arrival data and service alerts"
                 },
                 "description": "Configure GTFS parameters."
+            },
+            "reconfigure": {
+                "title": "Reconfigure GTFS parameters.",
+                "description": "This will force update to static data."
+            }
+        },
+        "error": {
+            "select_at_least_one_stop_or_route": "Must select at least one stop or route for GTFS updates."
+        }
+    },
+    "entity": {
+        "binary_sensor":{
+            "alert_descriptions": {
+                "header_0" : "Header",
+                "header_1" : "Header 1",
+                "header_2" : "Header 2",
+                "header_3" : "Header 3",
+                "header_4" : "Header 4",
+                "header_5" : "Header 5",
+                "description_0" : "Description",
+                "description_1" : "Description 1",
+                "description_2" : "Description 2",
+                "description_3" : "Description 3",
+                "description_4" : "Description 4",
+                "description_5" : "Description 5"
             }
         }
     }
