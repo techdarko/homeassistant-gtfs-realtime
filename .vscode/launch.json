@@ -11,7 +11,10 @@
                 "--debug",
                 "-c",
                 "."
-            ]
+            ],
+            "env":{ 
+                "GTFS_REALTIME_SHOW_MEMORY_USE": "on"
+            }
         },
         {
             "name": "Home Assistant (skip pip)",
@@ -36,6 +39,15 @@
                 "--timeout=10",
                 "--picked"
             ]
+        },
+        {
+            "name": "Python: Debug Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "purpose": ["debug-test"],
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }
