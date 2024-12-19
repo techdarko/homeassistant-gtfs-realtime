@@ -1,0 +1,20 @@
+{
+    "entity": {
+        "binary_sensor":{
+            "alert_descriptions": {
+                "description_0" : "Description",
+                "description_1" : "Description 1",
+                "description_2" : "Description 2",
+                "description_3" : "Description 3",
+                "description_4" : "Description 4",
+                "description_5" : "Description 5",
+                "header_0" : "Header",
+                "header_1" : "Header 1",
+                "header_2" : "Header 2",
+                "header_3" : "Header 3",
+                "header_4" : "Header 4",
+                "header_5" : "Header 5"
+            }
+        }
+    }
+}

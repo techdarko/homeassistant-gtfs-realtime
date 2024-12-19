@@ -5,9 +5,9 @@
     "@bcpearce"
   ],
   "config_flow": true,
-  "integration_type": "hub",
   "dependencies": [],
   "documentation": "https://github.com/bcpearce/homeassistant-gtfs-realtime",
+  "integration_type": "hub",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/bcpearce/homeassistant-gtfs-realtime/issues",
   "requirements": [
