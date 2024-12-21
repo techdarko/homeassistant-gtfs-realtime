@@ -1,18 +1,23 @@
 {
+  "domain": "gtfs_realtime",
+  "title": "Entry V1 Full",
   "data": {
     "api_key": "",
     "arrival_limit": 4,
     "gtfs_provider": "Entry V1 Mock",
     "gtfs_static_data": [
-        "http://example.com/gtfs1.zip",
-        "http://example.com/gtfs2.zip"
+      "http://example.com/gtfs1.zip",
+      "http://example.com/gtfs2.zip"
     ],
     "route_icons": "icons.example.com/{}.svg",
     "route_ids": [
-      "1", "2", "3"
+      "1",
+      "2",
+      "3"
     ],
     "stop_ids": [
-      "101N", "102S"
+      "101N",
+      "102S"
     ],
     "url_endpoints": [
       "https://api-endpoint.example.com/rt1",
@@ -22,16 +27,14 @@
       "https://api-endpoint.example.com/rt5"
     ]
   },
-  "discovery_keys": {},
   "disabled_by": null,
-  "domain": "gtfs_realtime",
+  "discovery_keys": {},
   "entry_id": "ENTRYV1FULL",
   "minor_version": 1,
   "options": {},
   "pref_disable_new_entities": false,
   "pref_disable_polling": false,
   "source": "user",
-  "title": "Entry V1 Full",
   "unique_id": null,
   "version": 1
 }

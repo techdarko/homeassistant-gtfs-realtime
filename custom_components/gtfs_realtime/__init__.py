@@ -2,19 +2,17 @@
 
 # GTFS Station Stop Feed Subject serves as the data hub for the integration
 
-from dataclasses import dataclass
+from collections.abc import Iterable
 from datetime import timedelta
 import logging
+import os
 from typing import Any
 
-from gtfs_station_stop.calendar import Calendar
 from gtfs_station_stop.feed_subject import FeedSubject
-from gtfs_station_stop.route_info import RouteInfoDatabase
-from gtfs_station_stop.station_stop_info import StationStopInfoDatabase
-from gtfs_station_stop.trip_info import TripInfoDatabase
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.selector import TextSelector, TextSelectorConfig
 import voluptuous as vol
 
 from custom_components.gtfs_realtime.config_flow import DOMAIN_SCHEMA
@@ -37,31 +35,18 @@ CONFIG_SCHEMA = vol.Schema(
     extra=vol.ALLOW_EXTRA,
 )
 
-
-@dataclass
-class GtfsProviderData:
-    """Class for maintaining data received from a GTFS provider."""
-
-    coordinator: GtfsRealtimeCoordinator
-    calendar: Calendar
-    ssi_db: StationStopInfoDatabase
-    ti_db: TripInfoDatabase
-    rti_db: RouteInfoDatabase
-    rt_icons: str | None
-
-
 type GtfsRealtimeConfigEntry = ConfigEntry[GtfsRealtimeCoordinator]
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def _async_create_gtfs_update_hub(hass: HomeAssistant, config: dict[str, Any]):
+def create_gtfs_update_hub(
+    hass: HomeAssistant, config: dict[str, Any]
+) -> GtfsRealtimeCoordinator:
     hub = FeedSubject(
         config[CONF_URL_ENDPOINTS], headers={"api_key": config[CONF_API_KEY]}
     )
     route_icons: str | None = config.get(CONF_ROUTE_ICONS)  # optional
-    # Attempt to perform an update to verify configuration
-    await hub.async_update()
 
     static_timedelta = {
         uri: timedelta(**timedelta_dict)
@@ -71,50 +56,81 @@ async def _async_create_gtfs_update_hub(hass: HomeAssistant, config: dict[str, A
     for value in static_timedelta.values():
         if value == timedelta(seconds=0):
             value = timedelta(hours=CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT)
-    coordinator = GtfsRealtimeCoordinator(
+    return GtfsRealtimeCoordinator(
         hass,
         hub,
         config[CONF_GTFS_STATIC_DATA],
         static_timedelta=static_timedelta,
+        route_icons=route_icons,
     )
-    # Update the static data for the coordinator before the first update
-    await coordinator.async_update_static_data(config[CONF_GTFS_STATIC_DATA])
-
-    gtfs_provider_data = GtfsProviderData(
-        coordinator,
-        coordinator.calendar,
-        coordinator.station_stop_info_db,
-        coordinator.trip_info_db,
-        coordinator.route_info_db,
-        route_icons,
-    )
-
-    hass.data.setdefault(DOMAIN, {})[coordinator.get_lookup_id()] = gtfs_provider_data
-    return True
 
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: GtfsRealtimeConfigEntry
 ) -> bool:
     """Set up GTFS Realtime Feed Subject for use by all sensors."""
-    await _async_create_gtfs_update_hub(hass, entry.data)
+    coordinator: GtfsRealtimeCoordinator = create_gtfs_update_hub(hass, entry.data)
+    await coordinator.async_config_entry_first_refresh()
+    entry.runtime_data = coordinator
+
+    async def handle_refresh_static_feeds(call):
+        """Handle service action to refresh static feeds."""
+        targets: Iterable[os.PathLike] = call.data.get(
+            CONF_GTFS_STATIC_DATA, entry.runtime_data.gtfs_static_zip
+        )
+        await entry.runtime_data.async_update_static_data(targets=targets)
+
+    async def handle_clear_static_feeds(call):
+        """Handle service action to clear static feeds."""
+        await entry.runtime_data.async_update_static_data(
+            targets=[], clear_old_data=True
+        )
+
+    hass.services.async_register(
+        DOMAIN,
+        "refresh_static_feeds",
+        handle_refresh_static_feeds,
+        vol.Schema(
+            {
+                vol.Optional(
+                    CONF_GTFS_STATIC_DATA,
+                    default=entry.runtime_data.gtfs_static_zip,
+                    description=(
+                        {"suggested_value": ["https://"]}
+                        if len(entry.runtime_data.gtfs_static_zip) == 0
+                        else {}
+                    ),
+                ): TextSelector(TextSelectorConfig(multiline=False, multiple=True)),
+            }
+        ),
+    )
+
+    hass.services.async_register(
+        DOMAIN, "clear_static_feeds", handle_clear_static_feeds
+    )
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload GTFS config entry."""
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
 async def async_migrate_entry(
-    hass: HomeAssistant, config_entry: GtfsRealtimeConfigEntry
+    hass: HomeAssistant, entry: GtfsRealtimeConfigEntry
 ) -> bool:
     """Migrate old entry."""
     _LOGGER.debug(
         "Migrating configuration from version %s.%s",
-        config_entry.version,
-        config_entry.minor_version,
+        entry.version,
+        entry.minor_version,
     )
-    if config_entry.version > 1:
+    if entry.version > 1:
         return False
-    if config_entry.version == 1:
-        new_data = {**config_entry.data}
+    if entry.version == 1:
+        new_data = {**entry.data}
         new_data[CONF_STATIC_SOURCES_UPDATE_FREQUENCY] = {}
         for uri in new_data[CONF_GTFS_STATIC_DATA]:
             _LOGGER.debug(
@@ -124,6 +140,6 @@ async def async_migrate_entry(
                 "hours": CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT
             }
         hass.config_entries.async_update_entry(
-            config_entry, data=new_data, version=2, minor_version=0
+            entry, data=new_data, version=2, minor_version=0
         )
     return True

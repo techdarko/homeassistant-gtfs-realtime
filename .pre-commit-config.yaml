@@ -43,11 +43,17 @@ repos:
     hooks:
       - id: isort
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: check-executables-have-shebangs
         stages: [manual]
       - id: check-json
+      - id: check-yaml
+        exclude: ^example/frontend.yaml
+      - id: pretty-format-json
+        args: 
+          - --autofix
+          - --top-keys=domain,title,name
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: v0.3.3
@@ -56,3 +62,10 @@ repos:
       - id: ruff
       # Run the formatter.
       - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: hassfest
+        name: hassfest
+        language: script
+        entry: hooks/hassfest.sh
