@@ -1,0 +1,108 @@
+{
+  "boston_mbta": {
+    "name": "Boston MBTA",
+    "realtime_feeds": {
+      "alerts": "https://cdn.mbta.com/realtime/Alerts.pb",
+      "trip_update": "https://cdn.mbta.com/realtime/TripUpdates.pb",
+      "vehicle_positions": "https://cdn.mbta.com/realtime/VehiclePositions.pb"
+    },
+    "static_feeds": {
+      "regular": "https://cdn.mbta.com/MBTA_GTFS.zip"
+    }
+  },
+  "nyc_bus": {
+    "name": "NYC Busses",
+    "realtime_feeds": {
+      "alerts": "https://gtfsrt.prod.obanyc.com/alerts?key=",
+      "trip_update": "https://gtfsrt.prod.obanyc.com/tripUpdates?key=",
+      "vehicle_positions": "https://gtfsrt.prod.obanyc.com/vehiclePositions?key="
+    },
+    "static_feeds": {
+      "bronx": "http://web.mta.info/developers/data/nyct/bus/google_transit_bronx.zip",
+      "brooklyn": "http://web.mta.info/developers/data/nyct/bus/google_transit_brooklyn.zip",
+      "manhattan": "http://web.mta.info/developers/data/nyct/bus/google_transit_manhattan.zip",
+      "mta_bus": "http://web.mta.info/developers/data/busco/google_transit.zip",
+      "queens": "http://web.mta.info/developers/data/nyct/bus/google_transit_queens.zip",
+      "staten_island": "http://web.mta.info/developers/data/nyct/bus/google_transit_staten_island.zip"
+    }
+  },
+  "nyc_ferry": {
+    "name": "NYC Ferry",
+    "realtime_feeds": {
+      "alerts": "http://nycferry.connexionz.net/rtt/public/utility/gtfsrealtime.aspx/alert",
+      "trip_update": "http://nycferry.connexionz.net/rtt/public/utility/gtfsrealtime.aspx/tripupdate"
+    },
+    "static_feeds": {
+      "regular": "http://nycferry.connexionz.net/rtt/public/utility/gtfs.aspx"
+    }
+  },
+  "nyc_long_island_railroad": {
+    "name": "Long Island Railroad",
+    "realtime_feeds": {
+      "all": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/lirr%2Fgtfs-lirr"
+    },
+    "static_feeds": {
+      "regular": "https://rrgtfsfeeds.s3.amazonaws.com/google_transit.zip"
+    }
+  },
+  "nyc_metro_north_railroad": {
+    "name": "Metro North Railroad",
+    "realtime_feeds": {
+      "all": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/mnr%2Fgtfs-mnr"
+    },
+    "static_feeds": {
+      "regular": "http://web.mta.info/developers/data/mnr/google_transit.zip"
+    }
+  },
+  "nyc_subway": {
+    "name": "NYC Subway",
+    "realtime_feeds": {
+      "1234567S": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs",
+      "ACE": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace",
+      "BDFM": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm",
+      "G": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-g",
+      "JZ": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz",
+      "L": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l",
+      "NQRW": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-nqrw",
+      "SIR": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si",
+      "alerts": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts"
+    },
+    "route_icons": "https://raw.githubusercontent.com/bcpearce/homeassistant-gtfs-realtime/main/resources/NYCT_Bullets/{}.svg",
+    "static_feeds": {
+      "regular": "http://web.mta.info/developers/data/nyct/subway/google_transit.zip",
+      "supplemented": "http://web.mta.info/developers/files/google_transit_supplemented.zip"
+    }
+  },
+  "sf_bart": {
+    "name": "Bay Area Rapid Transit",
+    "realtime_feeds": {
+      "alerts": "http://api.bart.gov/gtfsrt/alerts.aspx",
+      "trip_update": "http://api.bart.gov/gtfsrt/tripupdate.aspx"
+    },
+    "static_feeds": {
+      "regular": "https://www.bart.gov/dev/schedules/google_transit.zip"
+    }
+  },
+  "washington_metro_area_bus": {
+    "name": "Washington Metropolitan Area Transit Authroity Bus",
+    "realtime_feeds": {
+      "alerts": "https://api.wmata.com/gtfs/bus-gtfsrt-alerts.pb",
+      "trip_update": "https://api.wmata.com/gtfs/bus-gtfsrt-tripupdates.pb",
+      "vehicle_positions": "https://api.wmata.com/gtfs/bus-gtfsrt-vehiclepositions.pb"
+    },
+    "static_feeds": {
+      "regular": "https://api.wmata.com/gtfs/bus-gtfs-static.zip"
+    }
+  },
+  "washington_metro_area_rail": {
+    "name": "Washington Metropolitan Area Transit Authority Rail",
+    "realtime_feeds": {
+      "alerts": "https://api.wmata.com/gtfs/rail-gtfsrt-alerts.pb",
+      "trip_update": "https://api.wmata.com/gtfs/rail-gtfsrt-tripupdates.pb",
+      "vehicle_positions": "https://api.wmata.com/gtfs/rail-gtfsrt-vehiclepositions.pb"
+    },
+    "static_feeds": {
+      "regular": "https://api.wmata.com/gtfs/rail-gtfs-static.zip"
+    }
+  }
+}

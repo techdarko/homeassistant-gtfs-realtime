@@ -1,11 +1,10 @@
 """Test component setup."""
 
 from datetime import timedelta
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
-import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.gtfs_realtime.const import (
@@ -32,7 +31,6 @@ async def test_async_setup(hass: HomeAssistant) -> None:
     assert await async_setup_component(hass, DOMAIN, test_config) is True
 
 
-@pytest.mark.parametrize("expected_lingering_timers", [True])
 async def test_migrate_from_v1(
     hass: HomeAssistant,
     entry_v1_full: MockConfigEntry,
@@ -40,16 +38,16 @@ async def test_migrate_from_v1(
     """Test Migration From Version 1."""
 
     with patch(
-        "gtfs_station_stop.feed_subject.FeedSubject.async_update",
-        new_callable=AsyncMock,
+        "gtfs_station_stop.feed_subject.FeedSubject.async_update", return_value=None
     ), patch(
         "custom_components.gtfs_realtime.coordinator.GtfsRealtimeCoordinator.async_update_static_data",
-        new_callable=AsyncMock,
+        return_value=None,
     ):
         entry_v1_full.add_to_hass(hass)
 
         await hass.config_entries.async_setup(entry_v1_full.entry_id)
-        await hass.async_block_till_done()
+
+    await hass.async_block_till_done()
 
     # Adds default time for each static data url
     updated_entry = hass.config_entries.async_get_entry(entry_v1_full.entry_id)

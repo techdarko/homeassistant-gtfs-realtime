@@ -23,6 +23,11 @@ FEEDS_URL = "https://gist.githubusercontent.com/bcpearce/cc60c18f4022c4a11c460c5
 
 STOP_ID = "stop_id"
 ROUTE_ID = "route_id"
+TRIP_ID = "trip_id"
+ROUTE_COLOR = "route_color"
+ROUTE_TEXT_COLOR = "route_text_color"
+HEADSIGN = "headsign"
+ROUTE_TYPE = "route_type"
 
 SSI_DB = "station_stop_info_db"
 TI_DB = "trip_info_db"
@@ -30,17 +35,5 @@ CAL_DB = "calendar_db"
 RTI_DB = "route_info_db"
 
 COORDINATOR_REALTIME = "coordinator_realtime"
-COORDINATOR_STATIC = "coordinator_static"
 
 PLATFORM = "platform"
-
-"""These Constants are user facing."""
-
-TRIP_ID_PRETTY = "Trip ID"
-HEADSIGN_PRETTY = "Headsign"
-ROUTE_COLOR_PRETTY = "Route Color"
-ROUTE_TEXT_COLOR_PRETTY = "Route Text Color"
-ROUTE_TYPE_PRETTY = "Route Type"
-
-HEADER_PRETTY = "Header"
-DESCRIPTION_PRETTY = "Description"

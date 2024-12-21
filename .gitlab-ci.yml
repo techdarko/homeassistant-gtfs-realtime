@@ -24,10 +24,19 @@ check_formatting:
     paths:
       - $PRE_COMMIT_HOME
   script:
-    - pre-commit run --all-files
+    - SKIP=hassfest pre-commit run --all-files
+
+hassfest:
+  stage: lint
+  image: 
+    name: ghcr.io/home-assistant/hassfest
+    entrypoint: [""]
+  script:
+    - /usr/src/homeassistant/script/hassfest/docker/entrypoint.sh
 
 pytest:
   stage: test
+  needs: []
   extends: .python-container
   variables:
     TEST_RESULTS_FILE: "test_results.xml"

@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-import os
-
 from gtfs_station_stop.arrival import Arrival
-from gtfs_station_stop.calendar import Calendar
-from gtfs_station_stop.route_info import RouteInfoDatabase, RouteType
+from gtfs_station_stop.route_info import RouteInfo, RouteType
 from gtfs_station_stop.station_stop import StationStop
 from gtfs_station_stop.station_stop_info import StationStopInfo
-from gtfs_station_stop.trip_info import TripInfoDatabase
 from homeassistant.components.sensor import (
     PLATFORM_SCHEMA as SENSOR_PLATFORM_SCHEMA,
     SensorDeviceClass,
@@ -20,25 +16,21 @@ from homeassistant.const import UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 import voluptuous as vol
 
-from custom_components.gtfs_realtime import GtfsProviderData
+from custom_components.gtfs_realtime import GtfsRealtimeConfigEntry
 
 from .const import (
     CONF_ARRIVAL_LIMIT,
-    CONF_GTFS_STATIC_DATA,
     CONF_STOP_IDS,
-    CONF_URL_ENDPOINTS,
-    DOMAIN,
-    HEADSIGN_PRETTY,
-    ROUTE_COLOR_PRETTY,
+    HEADSIGN,
+    ROUTE_COLOR,
     ROUTE_ID,
-    ROUTE_TEXT_COLOR_PRETTY,
-    ROUTE_TYPE_PRETTY,
+    ROUTE_TEXT_COLOR,
+    ROUTE_TYPE,
     STOP_ID,
-    TRIP_ID_PRETTY,
+    TRIP_ID,
 )
 from .coordinator import GtfsRealtimeCoordinator
 
@@ -49,40 +41,20 @@ PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend(
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config: ConfigType,
+    entry: GtfsRealtimeConfigEntry,
     add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the sensor platform."""
-    lookup_id = GtfsRealtimeCoordinator.make_lookup_id(
-        realtime_feed_urls=config.data[CONF_URL_ENDPOINTS],
-        gtfs_static_zip=config.data[CONF_GTFS_STATIC_DATA],
-    )
-    provider_data: GtfsProviderData = hass.data[DOMAIN][lookup_id]
-    if discovery_info is None:
-        if CONF_STOP_IDS in config.data:
-            arrival_limit: int = int(round(config.data[CONF_ARRIVAL_LIMIT]))
-            route_icons: os.PathLike = provider_data.rt_icons
-            arrival_sensors = []
-            for i in range(arrival_limit):
-                for stop_id in config.data[CONF_STOP_IDS]:
-                    arrival_sensors.append(
-                        ArrivalSensor(
-                            provider_data.coordinator,
-                            StationStop(stop_id, provider_data.coordinator.hub),
-                            i,
-                            (
-                                provider_data.ssi_db.get(stop_id)
-                                if provider_data.ssi_db is not None
-                                else None
-                            ),
-                            provider_data.ti_db,
-                            provider_data.calendar,
-                            provider_data.rti_db,
-                            route_icons=route_icons,
-                        )
-                    )
-            add_entities(arrival_sensors, update_before_add=True)
+    coordinator: GtfsRealtimeCoordinator = entry.runtime_data
+    if CONF_STOP_IDS in entry.data:
+        arrival_limit: int = int(round(entry.data[CONF_ARRIVAL_LIMIT]))
+        arrival_sensors = []
+        for i in range(arrival_limit):
+            for stop_id in entry.data[CONF_STOP_IDS]:
+                arrival_sensors.append(
+                    ArrivalSensor(coordinator=coordinator, stop_id=stop_id, idx=i)
+                )
+        add_entities(arrival_sensors, update_before_add=True)
 
 
 class ArrivalSensor(SensorEntity, CoordinatorEntity):
@@ -104,25 +76,15 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
     def __init__(
         self,
         coordinator: GtfsRealtimeCoordinator,
-        station_stop: StationStop,
+        stop_id: str,
         idx: int,
-        station_stop_info: StationStopInfo | None = None,
-        trip_info_db: TripInfoDatabase | None = None,
-        calendar: Calendar | None = None,
-        route_info_db: RouteInfoDatabase | None = None,
-        route_icons: os.PathLike | None = None,
     ) -> None:
         """Initialize the sensor."""
         # Required
         super().__init__(coordinator)
-        self.station_stop = station_stop
+        self.station_stop = StationStop(stop_id, coordinator.hub)
         self._idx = idx
-        # Allowed to be `None`
-        self.station_stop_info = station_stop_info
-        self.trip_info_db = trip_info_db
-        self.calendar_db = calendar
-        self.route_icons = route_icons
-        self.route_info_db = route_info_db
+        self.coordinator = coordinator
         self.route_type = RouteType.UNKNOWN
 
         self._name = f"{self._idx + 1}: {self._get_station_ref()}"
@@ -132,11 +94,14 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         self._arrival_detail: dict[str, str] = {}
 
     def _get_station_ref(self):
-        return (
-            self.station_stop_info.name
-            if self.station_stop_info is not None
-            else self.station_stop.id
+        station_stop_info: StationStopInfo = (
+            self.coordinator.station_stop_info_db.station_stop_infos.get(
+                self.station_stop.id
+            )
         )
+        if station_stop_info is not None:
+            return station_stop_info.name
+        return self.station_stop.id
 
     @property
     def name(self) -> str:
@@ -151,12 +116,13 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
     @property
     def entity_picture(self) -> str | None:
         return (
-            str(self.route_icons).format(
+            str(self.coordinator.route_icons).format(
                 self._arrival_detail[ROUTE_ID],
-                self._arrival_detail.get(ROUTE_COLOR_PRETTY, "%230039A6"),
-                self._arrival_detail.get(ROUTE_TEXT_COLOR_PRETTY, "%23FFFFFF"),
+                self._arrival_detail.get(ROUTE_COLOR, "%230039A6"),
+                self._arrival_detail.get(ROUTE_TEXT_COLOR, "%23FFFFFF"),
             )
-            if self.route_icons and self._arrival_detail.get(ROUTE_ID) is not None
+            if self.coordinator.route_icons
+            and self._arrival_detail.get(ROUTE_ID) is not None
             else None
         )
 
@@ -173,24 +139,22 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
                 time_to_arrival.time, 0
             )  # do not allow negative numbers
             self._arrival_detail[ROUTE_ID] = time_to_arrival.route
-            if self.trip_info_db is not None:
-                trip_info = self.trip_info_db.get_close_match(
-                    time_to_arrival.trip, self.calendar_db
+            if self.coordinator.trip_info_db is not None:
+                trip_info = self.coordinator.trip_info_db.get_close_match(
+                    time_to_arrival.trip, self.coordinator.calendar
                 )
                 if trip_info is not None:
-                    self._arrival_detail[HEADSIGN_PRETTY] = trip_info.trip_headsign
-                    self._arrival_detail[TRIP_ID_PRETTY] = trip_info.trip_id
-            if self.route_info_db is not None:
-                route_info = self.route_info_db.get(time_to_arrival.route)
+                    self._arrival_detail[HEADSIGN] = trip_info.trip_headsign
+                    self._arrival_detail[TRIP_ID] = trip_info.trip_id
+            if self.coordinator.route_info_db is not None:
+                route_info: RouteInfo = self.coordinator.route_info_db.get(
+                    time_to_arrival.route
+                )
                 if route_info is not None:
-                    self._arrival_detail[ROUTE_COLOR_PRETTY] = route_info.color
-                    self._arrival_detail[ROUTE_TEXT_COLOR_PRETTY] = (
-                        route_info.text_color
-                    )
+                    self._arrival_detail[ROUTE_COLOR] = route_info.color
+                    self._arrival_detail[ROUTE_TEXT_COLOR] = route_info.text_color
                     self.route_type = route_info.type
-                    self._arrival_detail[ROUTE_TYPE_PRETTY] = (
-                        route_info.type.pretty_name()
-                    )
+                    self._arrival_detail[ROUTE_TYPE] = route_info.type.pretty_name()
         else:
             self._attr_native_value = None
         self.async_write_ha_state()
