@@ -36,7 +36,6 @@ hassfest:
 
 pytest:
   stage: test
-  needs: []
   extends: .python-container
   variables:
     TEST_RESULTS_FILE: "test_results.xml"
