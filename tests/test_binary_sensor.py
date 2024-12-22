@@ -1,59 +1,38 @@
 """Test sensor."""
 
-import datetime
+from unittest.mock import AsyncMock, patch
 
-from gtfs_station_stop.alert import Alert
-from gtfs_station_stop.feed_subject import FeedSubject
-from gtfs_station_stop.route_status import RouteStatus
+from gtfs_station_stop.calendar import Calendar
+from gtfs_station_stop.route_info import RouteInfoDatabase
+from gtfs_station_stop.station_stop_info import StationStopInfoDatabase
+from gtfs_station_stop.trip_info import TripInfoDatabase
+from homeassistant.const import STATE_OFF
 from homeassistant.core import HomeAssistant
-import pytest
-
-from custom_components.gtfs_realtime.binary_sensor import AlertSensor
-from custom_components.gtfs_realtime.coordinator import GtfsRealtimeCoordinator
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
-@pytest.fixture
-def alert_sensor(hass: HomeAssistant) -> AlertSensor:
-    """Fixture for a basic alert sensor."""
-    feed_subject = FeedSubject([])
-    route_status = RouteStatus("1", feed_subject)
-    route_status.alerts = [
-        Alert(datetime.datetime.max, {"en": "Alert"}, {"en": "This is an Alert"}),
-        Alert(
-            datetime.datetime.max,
-            {"en": "Another Alert"},
-            {"en": "This is another Alert"},
+async def test_setup_binary_sensors(
+    hass: HomeAssistant, entry_v2_nodialout: MockConfigEntry
+):
+    """Test setting up binary sensors for integration."""
+    with (
+        patch(
+            "custom_components.gtfs_realtime.coordinator.GtfsRealtimeCoordinator._async_update_data",
+            new_callable=AsyncMock,
         ),
-    ]
-
-    async def noop():
-        pass
-
-    alert_sensor = AlertSensor(
-        GtfsRealtimeCoordinator(hass, feed_subject), route_status, "en"
-    )
-    alert_sensor.async_write_ha_state = noop
-    return alert_sensor
-
-
-def test_create_entity(alert_sensor):
-    """Tests entity construction."""
-    # Created by the fixture
-    assert alert_sensor.state == "off"
-    assert "1" in alert_sensor.name
-
-
-def test_update(alert_sensor):
-    """
-    Tests calling the update method on the sensor.
-
-    This will latch the data in station_stop into the hass platform.
-    """
-    alert_sensor.update()
-    assert alert_sensor.state == "on"
-    assert alert_sensor.extra_state_attributes["Header"] == "Alert"
-    assert alert_sensor.extra_state_attributes["Header 2"] == "Another Alert"
-    assert alert_sensor.extra_state_attributes["Description"] == "This is an Alert"
-    assert (
-        alert_sensor.extra_state_attributes["Description 2"] == "This is another Alert"
-    )
+        patch(
+            "custom_components.gtfs_realtime.coordinator.GtfsRealtimeCoordinator._async_update_static_data",
+            new_callable=AsyncMock,
+            return_value=(
+                Calendar(),
+                StationStopInfoDatabase(),
+                TripInfoDatabase(),
+                RouteInfoDatabase(),
+            ),
+        ),
+    ):
+        entry_v2_nodialout.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry_v2_nodialout.entry_id)
+        await hass.async_block_till_done()
+        assert hass.states.get("binary_sensor.1_service_alerts").state == STATE_OFF
+        assert hass.states.get("binary_sensor.2_service_alerts").state == STATE_OFF

@@ -6,7 +6,7 @@ stages:
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   PRE_COMMIT_HOME: "/.cache/pre-commit"
-  PYTHON_IMAGE: python:3.12
+  PYTHON_IMAGE: python:3.13
 
 include:
   - local: "/template/.python-container.yml"
@@ -24,7 +24,15 @@ check_formatting:
     paths:
       - $PRE_COMMIT_HOME
   script:
-    - pre-commit run --all-files
+    - SKIP=hassfest pre-commit run --all-files
+
+hassfest:
+  stage: lint
+  image: 
+    name: ghcr.io/home-assistant/hassfest
+    entrypoint: [""]
+  script:
+    - /usr/src/homeassistant/script/hassfest/docker/entrypoint.sh
 
 pytest:
   stage: test

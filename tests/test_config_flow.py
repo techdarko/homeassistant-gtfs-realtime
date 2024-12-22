@@ -1,59 +1,231 @@
 """Test Config Flow."""
 
+from unittest.mock import patch
+
+from aiohttp.web import HTTPNotFound
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import RESULT_TYPE_FORM
+from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers.selector import SelectOptionDict
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.gtfs_realtime.config_flow import GtfsRealtimeConfigFlow
-from custom_components.gtfs_realtime.const import CONF_GTFS_STATIC_DATA, DOMAIN
+from custom_components.gtfs_realtime.const import (
+    CONF_GTFS_PROVIDER,
+    CONF_GTFS_PROVIDER_ID,
+    CONF_GTFS_STATIC_DATA,
+    CONF_ROUTE_IDS,
+    CONF_STOP_IDS,
+    CONF_URL_ENDPOINTS,
+    DOMAIN,
+)
 
 
 @pytest.fixture
 def flow():
     """Fixture that constructs the flow."""
-
-    # feeds call is now no-op
-    def no_feeds():
-        return {}
-
-    GtfsRealtimeConfigFlow.get_feeds = no_feeds
-    return GtfsRealtimeConfigFlow()
+    with patch.object(GtfsRealtimeConfigFlow, "_get_feeds", return_value={}):
+        flow = GtfsRealtimeConfigFlow()
+        yield flow
 
 
-@pytest.mark.skip("Fixture might be failing this.")
-async def test_form(hass: HomeAssistant, flow):
+@pytest.fixture
+def example_gtfs_feed_data():
+    """Fixture for example provider data."""
+    yield {
+        CONF_GTFS_PROVIDER: "Example GTFS Provider",
+        CONF_GTFS_PROVIDER_ID: "example_gtfs_provider",
+        CONF_URL_ENDPOINTS: [
+            "https://gtfs.example.com/rt1",
+            "https://gtfs.example.com/rt2",
+        ],
+        CONF_GTFS_STATIC_DATA: ["https://gtfs.example.com/static1.zip"],
+    }
+
+
+@pytest.fixture
+def good_routes_response_patch():
+    """Fixture for good feed response for pre-populating routes."""
+    yield patch.object(
+        GtfsRealtimeConfigFlow,
+        "_get_route_options",
+        return_value=[SelectOptionDict(value="X", label="Route X")],
+    )
+
+
+@pytest.fixture
+def good_stops_response_patch():
+    """Fixture for good feed response for pre-populating stops."""
+    yield patch.object(
+        GtfsRealtimeConfigFlow,
+        "_get_stop_options",
+        return_value=[SelectOptionDict(value="A", label="Route A")],
+    )
+
+
+@pytest.fixture
+def bad_routes_response_patch():
+    """Fixture for bad feed response for pre-populating routes."""
+    yield patch.object(
+        GtfsRealtimeConfigFlow,
+        "_get_route_options",
+        side_effect=HTTPNotFound(),
+    )
+
+
+@pytest.fixture
+def bad_stops_response_patch():
+    """Fixture for bad feed response for pre-populating stops."""
+    yield patch.object(
+        GtfsRealtimeConfigFlow,
+        "_get_stop_options",
+        side_effect=HTTPNotFound(),
+    )
+
+
+@pytest.fixture
+def example_gtfs_informed_entities_data():
+    """Fixture for informed entities data."""
+    yield {CONF_ROUTE_IDS: ["X", "Y", "Z"], CONF_STOP_IDS: ["A", "B", "C"]}
+
+
+async def test_form(hass: HomeAssistant, flow) -> None:
     """Test we get the form."""
-    result = await hass.config_entries.flow.async_init(
+    result: ConfigFlowResult = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] == RESULT_TYPE_FORM
-    assert result["errors"] is None
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {}
 
 
-async def test_step_user(flow):
+async def test_step_user(flow: GtfsRealtimeConfigFlow) -> None:
     """Test User Setup through Config Flow."""
-    await flow.async_step_user(None)
+    result: ConfigFlowResult = await flow.async_step_user(None)
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {}
+    # check feeds were acquired
+    GtfsRealtimeConfigFlow._get_feeds.assert_called()
 
 
-async def test_user_step_get_feeds_fails(flow):
-    """Test that failures getting feeds do not break config flow."""
-
-    def fail():
-        raise RuntimeError("This must fail.")
-
-    GtfsRealtimeConfigFlow.get_feeds = fail
-    flow_result = await flow.async_step_user(None)
-    assert "base" in flow_result["errors"]
-
-
-async def test_step_choose_static_and_realtime_feeds(flow):
-    """Test config flow for choosing static and realtime feeds."""
-    await flow.async_step_choose_static_and_realtime_feeds({})
-
-
-async def test_step_choose_informed_entities(flow):
-    """Test config flow for choosing informed entities."""
-    await flow.async_step_choose_informed_entities(
-        user_input={CONF_GTFS_STATIC_DATA: []}
+async def test_step_user_input_manual_provider(flow: GtfsRealtimeConfigFlow) -> None:
+    """Test User input selection 'Manual' GTFS provider."""
+    result: ConfigFlowResult = await flow.async_step_user(
+        user_input={CONF_GTFS_PROVIDER_ID: "_"}
     )
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "choose_static_and_realtime_feeds"
+
+
+async def test_user_step_get_feeds_fails() -> None:
+    """Test that failures getting feeds do not break config flow."""
+    with patch.object(GtfsRealtimeConfigFlow, "_get_feeds", side_effect=HTTPNotFound()):
+        flow = GtfsRealtimeConfigFlow()
+        result: ConfigFlowResult = await flow.async_step_user(None)
+        assert "base" in result["errors"]
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "user"
+
+
+async def test_step_choose_static_and_realtime_feeds_no_prefill(
+    flow: GtfsRealtimeConfigFlow,
+) -> None:
+    """Test config flow for choosing static and realtime feeds."""
+    result: ConfigFlowResult = await flow.async_step_choose_static_and_realtime_feeds()
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "choose_static_and_realtime_feeds"
+
+
+async def test_step_choose_static_and_realtime_feeds_prefilled(
+    flow: GtfsRealtimeConfigFlow,
+    example_gtfs_feed_data,
+    good_stops_response_patch,
+    good_routes_response_patch,
+):
+    """Test that choosing feeds pre-fills from the previous step."""
+    with good_stops_response_patch, good_routes_response_patch:
+        await flow.async_step_choose_static_and_realtime_feeds(example_gtfs_feed_data)
+        # hub will be configured with the provider name and ID
+        assert flow.hub_config[CONF_GTFS_PROVIDER_ID] == "example_gtfs_provider"
+
+
+async def test_step_choose_informed_entities(
+    flow: GtfsRealtimeConfigFlow,
+    example_gtfs_feed_data,
+    good_stops_response_patch,
+    good_routes_response_patch,
+) -> None:
+    """Test config flow for choosing informed entities."""
+    flow.hub_config |= example_gtfs_feed_data
+
+    with good_stops_response_patch, good_routes_response_patch:
+        result: ConfigFlowResult = await flow.async_step_choose_informed_entities()
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "choose_informed_entities"
+
+
+async def test_step_choose_informed_entities_shows_feed_selector_if_data_pull_fails(
+    flow: GtfsRealtimeConfigFlow,
+    example_gtfs_feed_data,
+    bad_stops_response_patch,
+    bad_routes_response_patch,
+) -> None:
+    """Test config flow for choosing informed entities."""
+    flow.hub_config |= example_gtfs_feed_data
+
+    with bad_stops_response_patch, bad_routes_response_patch:
+        result: ConfigFlowResult = await flow.async_step_choose_informed_entities()
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "choose_static_and_realtime_feeds"
+    assert result["errors"]
+
+
+async def test_step_choose_informed_entities_good_data(
+    flow: GtfsRealtimeConfigFlow,
+    example_gtfs_feed_data,
+    example_gtfs_informed_entities_data,
+) -> None:
+    """Test config flow finish after choosing informed entities."""
+    flow.hub_config |= example_gtfs_feed_data
+    result: ConfigFlowResult = await flow.async_step_choose_informed_entities(
+        user_input=example_gtfs_informed_entities_data
+    )
+    # creates an entry
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+
+
+async def test_step_choose_informed_entities_no_entities(
+    flow: GtfsRealtimeConfigFlow,
+    example_gtfs_feed_data,
+    good_stops_response_patch,
+    good_routes_response_patch,
+) -> None:
+    """Test config flow finish after choosing informed entities."""
+    flow.hub_config |= example_gtfs_feed_data
+    with good_stops_response_patch, good_routes_response_patch:
+        result: ConfigFlowResult = await flow.async_step_choose_informed_entities(
+            user_input={CONF_ROUTE_IDS: [], CONF_STOP_IDS: []}
+        )
+    # creates an entry
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "choose_informed_entities"
+
+
+@pytest.mark.skip(reason="Need to Reimplement Reconfiguration Step")
+async def test_step_reconfigure(hass: HomeAssistant, entry_v1: MockConfigEntry) -> None:
+    """Test Reconfigure."""
+    entry_v1.add_to_hass(hass)
+    old_entry_data = entry_v1.data.copy()
+    result = await entry_v1.start_reconfigure_flow(hass)
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"gtfs_static_data_update_frequency_hours": 15}
+    )
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    entry = hass.config_entries.async_get_entry(entry_v1.entry_id)
+    assert entry.data == {**old_entry_data, **entry.data}
+    assert entry.data["gtfs_static_data_update_frequency_hours"] == 15
