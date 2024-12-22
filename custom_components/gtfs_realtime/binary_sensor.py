@@ -87,6 +87,7 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
         return self._alert_detail
 
     def update(self) -> None:
+        """Update state from coordinator data."""
         alerts = self.informed_entity.alerts
         self._alert_detail = {}
         if len(alerts) == 0:
@@ -94,14 +95,15 @@ class AlertSensor(BinarySensorEntity, CoordinatorEntity):
         elif len(alerts) > 0:
             self._attr_is_on = True
             for i, alert in enumerate(alerts):
-                self._alert_detail[f"header_{i+1}"] = alert.header_text.get(
+                self._alert_detail[f"header_{i + 1}"] = alert.header_text.get(
                     self.language, ""
                 )
-                self._alert_detail[f"description_{i+1}"] = alert.description_text.get(
+                self._alert_detail[f"description_{i + 1}"] = alert.description_text.get(
                     self.language, ""
                 )
         self.async_write_ha_state()
 
     @callback
     def _handle_coordinator_update(self) -> None:
+        """Handle coordinator update callback."""
         self.update()

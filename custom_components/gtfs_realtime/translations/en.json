@@ -1,8 +1,14 @@
 {
   "title": "GTFS Realtime",
+  "common": {
+    "generic_gtfs_provider": "Generic GTFS Provider",
+    "manual_gtfs_provider_name": "Other - Enter Manually"
+  },
   "config": {
     "error": {
-      "select_at_least_one_stop_or_route": "Must select at least one stop or route for GTFS updates."
+      "failed_preconfigured_feeds": "Failed to get preconfigured feeds",
+      "select_at_least_one_stop_or_route": "Must select at least one stop or route for GTFS updates.",
+      "unexpected_user_input": "Unexpected user Input"
     },
     "step": {
       "choose_informed_entities": {
@@ -49,7 +55,7 @@
         "data": {
           "gtfs_provider_id": "GTFS Provider"
         },
-        "description": "Select a GTFS Provider"
+        "description": "Select GTFS Provider"
       }
     }
   },

@@ -9,7 +9,9 @@ import os
 from gtfs_station_stop.calendar import Calendar
 from gtfs_station_stop.feed_subject import FeedSubject
 from gtfs_station_stop.route_info import RouteInfoDatabase
+from gtfs_station_stop.route_status import RouteStatus
 from gtfs_station_stop.static_database import async_factory
+from gtfs_station_stop.station_stop import StationStop
 from gtfs_station_stop.station_stop_info import StationStopInfoDatabase
 from gtfs_station_stop.trip_info import TripInfoDatabase
 from homeassistant.core import HomeAssistant
@@ -27,7 +29,7 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
         self,
         hass: HomeAssistant,
         feed_subject: FeedSubject,
-        gtfs_static_zip: Iterable[os.PathLike] | os.PathLike = [],
+        gtfs_static_zip: Iterable[os.PathLike] | os.PathLike = list[os.PathLike],
         **kwargs,
     ) -> None:
         """Initialize the GTFS Update Coordinator to notify all entities upon poll."""
@@ -41,11 +43,13 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
             update_interval=self.realtime_timedelta,
         )
         self.static_timedelta: dict[os.PathLike, timedelta] = kwargs.get(
-            "static_timedelta", dict[os.PathLike, timedelta]()
+            "static_timedelta", {}
         )
         self.kwargs = kwargs
-        self.hub = feed_subject
-        self.gtfs_static_zip = gtfs_static_zip
+        self.hub: FeedSubject = feed_subject
+        self.station_stops: dict[str, StationStop] = {}
+        self.routes_statuses: dict[str, RouteStatus] = {}
+        self.gtfs_static_zip: Iterable[os.PathLike] | os.PathLike = gtfs_static_zip
         self.calendar: Calendar = Calendar()
         self.station_stop_info_db: StationStopInfoDatabase = StationStopInfoDatabase()
         self.trip_info_db: TripInfoDatabase = TripInfoDatabase()
@@ -55,7 +59,8 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
         self.trip_infos_len: int = 0
         self.route_infos_len: int = 0
         self.route_icons: str | None = kwargs.get(CONF_ROUTE_ICONS)
-        self.last_static_update: dict[os.PathLike, datetime] | None = None
+        self.static_update_targets: set[os.PathLike] = set(gtfs_static_zip)
+        self.last_static_update: dict[os.PathLike, datetime] = {}
         _LOGGER.debug("Setup GTFS Realtime Update Coordinator")
         _LOGGER.debug(f"Realtime GTFS update interval {self.realtime_timedelta}")
         for uri, delta in self.static_timedelta.items():
@@ -63,84 +68,93 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Fetch data from API endpoint."""
+        self.static_update_targets |= {
+            uri
+            for uri, last_update in self.last_static_update.items()
+            if datetime.now() - last_update
+            > self.static_timedelta.get(
+                uri, CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT
+            )
+        }
+        await self.async_update_static_data()
         await self.hub.async_update()
-        # Update the static resource if it is past that timedelta
-        if self.last_static_update is None:
-            targets = self.gtfs_static_zip
-            self.last_static_update = dict[os.PathLike, datetime]()
-        else:
-            targets = [
-                uri
-                for uri, last_update in self.last_static_update.items()
-                if datetime.now() - last_update
-                > self.static_timedelta.get(
-                    uri, CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT
-                )
-            ]
-        await self.async_update_static_data(targets)
 
-    async def async_update_static_data(
-        self, targets: Iterable[os.PathLike], clear_old_data=False
-    ):
+    async def _async_update_static_data(self):
+        async with asyncio.TaskGroup() as tg:
+            cal_db_task = tg.create_task(
+                async_factory(Calendar, *self.static_update_targets, **self.kwargs)
+            )
+            ssi_db_task = tg.create_task(
+                async_factory(
+                    StationStopInfoDatabase, *self.static_update_targets, **self.kwargs
+                )
+            )
+            ti_db_task = tg.create_task(
+                async_factory(
+                    TripInfoDatabase, *self.static_update_targets, **self.kwargs
+                )
+            )
+            rti_db_task = tg.create_task(
+                async_factory(
+                    RouteInfoDatabase, *self.static_update_targets, **self.kwargs
+                )
+            )
+        return (
+            cal_db_task.result(),
+            ssi_db_task.result(),
+            ti_db_task.result(),
+            rti_db_task.result(),
+        )
+
+    async def async_update_static_data(self, clear_old_data=False):
+        """Update or clear static feeds and merge with existing databases."""
+        # Check for clear old data to reset the databases
         if clear_old_data:
             self.calendar = Calendar()
             self.station_stop_info_db = StationStopInfoDatabase()
             self.trip_info_db = TripInfoDatabase()
             self.route_info_db = RouteInfoDatabase()
+            _LOGGER.debug("GTFS Static data cleared")
+        elif not self.static_update_targets:
+            return
 
-        async with asyncio.TaskGroup() as tg:
-            cal_db_task = tg.create_task(
-                async_factory(Calendar, *targets, **self.kwargs)
-            )
-            ssi_db_task = tg.create_task(
-                async_factory(StationStopInfoDatabase, *targets, **self.kwargs)
-            )
-            ti_db_task = tg.create_task(
-                async_factory(TripInfoDatabase, *targets, **self.kwargs)
-            )
-            rti_db_task = tg.create_task(
-                async_factory(RouteInfoDatabase, *targets, **self.kwargs)
-            )
+        cal_db, ssi_db, ti_db, rti_db = await self._async_update_static_data()
 
         old_services_len = self.services_len
-        self.calendar.services |= cal_db_task.result().services
+        self.calendar.services |= cal_db.services
         self.services_len = len(self.calendar.services)
 
         old_stop_infos_len = self.stop_infos_len
-        self.station_stop_info_db.station_stop_infos |= (
-            ssi_db_task.result().station_stop_infos
-        )
+        self.station_stop_info_db.station_stop_infos |= ssi_db.station_stop_infos
         self.stop_infos_len = len(self.station_stop_info_db.station_stop_infos)
 
         old_trip_infos_len = self.trip_infos_len
-        self.trip_info_db.trip_infos |= ti_db_task.result().trip_infos
+        self.trip_info_db.trip_infos |= ti_db.trip_infos
         self.trip_infos_len = len(self.trip_info_db.trip_infos)
 
         old_route_infos_len = self.route_infos_len
-        self.route_info_db.route_infos |= rti_db_task.result().route_infos
+        self.route_info_db.route_infos |= rti_db.route_infos
         self.route_infos_len = len(self.route_info_db.route_infos)
 
         _LOGGER.debug(
-            f"GTFS Static Coordinator Merge New Data Update Complete {self.gtfs_static_zip}"
+            f"GTFS Coordinator Merge New Static Data Update Complete {self.gtfs_static_zip}"
         )
         _LOGGER.debug(
-            f"GTFS Static Coordinator Services: {old_services_len} -> {self.services_len}"
+            f"GTFS Coordinator Services: {old_services_len} -> {self.services_len}"
         )
         _LOGGER.debug(
-            f"GTFS Static Coordinator Station Stop Infos: {old_stop_infos_len} -> {self.stop_infos_len}"
+            f"GTFS Coordinator Station Stop Infos: {old_stop_infos_len} -> {self.stop_infos_len}"
         )
         _LOGGER.debug(
-            f"GTFS Static Coordinator Trip Infos: {old_trip_infos_len} -> {self.trip_infos_len}"
+            f"GTFS Coordinator Trip Infos: {old_trip_infos_len} -> {self.trip_infos_len}"
         )
         _LOGGER.debug(
-            f"GTFS Static Coordinator Route Infos: {old_route_infos_len} -> {self.route_infos_len}"
+            f"GTFS Coordinator Route Infos: {old_route_infos_len} -> {self.route_infos_len}"
         )
 
-        for target in targets:
-            if self.last_static_update is None:
-                self.last_static_update = {target: datetime.now()}
-            else:
-                self.last_static_update[target] = datetime.now()
+        for target in self.static_update_targets:
+            self.last_static_update.setdefault(target, datetime.now())
+        self.static_update_targets.clear()
 
         if os.environ.get("GTFS_REALTIME_SHOW_MEMORY_USE", "off") == "on":
             try:

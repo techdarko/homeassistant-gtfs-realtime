@@ -2,10 +2,8 @@
 
 # GTFS Station Stop Feed Subject serves as the data hub for the integration
 
-from collections.abc import Iterable
 from datetime import timedelta
 import logging
-import os
 from typing import Any
 
 from gtfs_station_stop.feed_subject import FeedSubject
@@ -18,6 +16,7 @@ import voluptuous as vol
 from custom_components.gtfs_realtime.config_flow import DOMAIN_SCHEMA
 
 from .const import (
+    CLEAR_STATIC_FEEDS,
     CONF_API_KEY,
     CONF_GTFS_STATIC_DATA,
     CONF_ROUTE_ICONS,
@@ -25,6 +24,7 @@ from .const import (
     CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT,
     CONF_URL_ENDPOINTS,
     DOMAIN,
+    REFRESH_STATIC_FEEDS,
 )
 from .coordinator import GtfsRealtimeCoordinator
 
@@ -43,6 +43,7 @@ _LOGGER = logging.getLogger(__name__)
 def create_gtfs_update_hub(
     hass: HomeAssistant, config: dict[str, Any]
 ) -> GtfsRealtimeCoordinator:
+    """Create the Update Coordinator."""
     hub = FeedSubject(
         config[CONF_URL_ENDPOINTS], headers={"api_key": config[CONF_API_KEY]}
     )
@@ -75,20 +76,16 @@ async def async_setup_entry(
 
     async def handle_refresh_static_feeds(call):
         """Handle service action to refresh static feeds."""
-        targets: Iterable[os.PathLike] = call.data.get(
-            CONF_GTFS_STATIC_DATA, entry.runtime_data.gtfs_static_zip
-        )
-        await entry.runtime_data.async_update_static_data(targets=targets)
+        entry.runtime_data.static_update_targets = set(call.data["gtfs_static_data"])
+        await entry.runtime_data.async_update_static_data()
 
     async def handle_clear_static_feeds(call):
         """Handle service action to clear static feeds."""
-        await entry.runtime_data.async_update_static_data(
-            targets=[], clear_old_data=True
-        )
+        await entry.runtime_data.async_update_static_data(clear_old_data=True)
 
     hass.services.async_register(
         DOMAIN,
-        "refresh_static_feeds",
+        REFRESH_STATIC_FEEDS,
         handle_refresh_static_feeds,
         vol.Schema(
             {
@@ -105,9 +102,7 @@ async def async_setup_entry(
         ),
     )
 
-    hass.services.async_register(
-        DOMAIN, "clear_static_feeds", handle_clear_static_feeds
-    )
+    hass.services.async_register(DOMAIN, CLEAR_STATIC_FEEDS, handle_clear_static_feeds)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
