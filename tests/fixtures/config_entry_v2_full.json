@@ -1,10 +1,10 @@
 {
   "domain": "gtfs_realtime",
-  "title": "Entry V1 Full",
+  "title": "Entry V2 Full",
   "data": {
     "api_key": "",
     "arrival_limit": 4,
-    "gtfs_provider": "Entry V1 Mock",
+    "gtfs_provider": "Entry V2 Mock",
     "gtfs_static_data": [
       "https://example.com/gtfs1.zip",
       "https://example.com/gtfs2.zip"
@@ -15,6 +15,14 @@
       "2",
       "3"
     ],
+    "static_sources_update_frequency": {
+      "https://example.com/gtfs1.zip": {
+        "hours": 2
+      },
+      "https://example.com/gtfs2.zip": {
+        "days": 10
+      }
+    },
     "stop_ids": [
       "101N",
       "102S"
@@ -29,12 +37,12 @@
   },
   "disabled_by": null,
   "discovery_keys": {},
-  "entry_id": "ENTRYV1FULL",
-  "minor_version": 1,
+  "entry_id": "ENTRYV2FULL",
+  "minor_version": 0,
   "options": {},
   "pref_disable_new_entities": false,
   "pref_disable_polling": false,
   "source": "user",
   "unique_id": null,
-  "version": 1
+  "version": 2
 }

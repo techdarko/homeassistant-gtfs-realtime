@@ -1,3 +1,5 @@
+"""Config Flow for GTFS Realtime."""
+
 import asyncio
 import json
 import logging
@@ -58,7 +60,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Config flow for GTFS Realtime"""
+    """Config flow for GTFS Realtime."""
 
     VERSION = CONF_VERSION
     MINOR_VERSION = CONF_MINOR_VERSION
@@ -75,12 +77,15 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
                     GtfsRealtimeConfigFlow.feeds = json.loads(await response.text())
 
     async def async_step_user(self, user_input=None):
+        """User initiated Config Flow."""
         errors = {}
         if user_input is not None:
             if CONF_GTFS_PROVIDER_ID in user_input:
                 return await self.async_step_choose_static_and_realtime_feeds(
                     user_input
                 )
+            else:
+                errors["base"] = "unexpected_user_input"
 
         # Update the feeds, typically this will be from an externally hosted
         # file so it may be kept up to date without requiring updates to this repository.
@@ -89,10 +94,10 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
             await GtfsRealtimeConfigFlow._get_feeds()
         except Exception as e:
             # do not allow errors to propagate, this is for convenience
-            _LOGGER.error("Failed to get preconfigured feeds")
-            errors["base"] = f"Failed to get preconfigured feeds: {e}"
+            _LOGGER.error("failed_preconfigured_feeds")
+            errors["base"] = f"failed_preconfigured_feeds: {e}"
 
-        options = {"_": "Other - Enter Manually"}
+        options = {"_": "..."}
         for k, v in GtfsRealtimeConfigFlow.feeds.items():
             options[k] = v["name"]
 
@@ -114,8 +119,9 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_choose_static_and_realtime_feeds(
-        self, user_input: dict[str, str], errors: dict[str, str] = {}
+        self, user_input: dict[str, str] = {}, errors: dict[str, str] = {}
     ):
+        """Select Static and Realtime Feed URIs."""
         if (
             CONF_GTFS_STATIC_DATA in user_input
             and CONF_URL_ENDPOINTS in user_input
@@ -124,17 +130,17 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
             self.hub_config = self.hub_config | user_input
             return await self.async_step_choose_informed_entities()
         gtfs_provider_id = user_input.get(CONF_GTFS_PROVIDER_ID)
-        realtime_feeds = [""]
-        static_feeds = [""]
-        route_icons = ""
         self.hub_config[CONF_GTFS_PROVIDER] = "Manual"
-        feed_data = GtfsRealtimeConfigFlow.feeds.get(gtfs_provider_id)
-        if feed_data is not None:
-            realtime_feeds = list(feed_data["realtime_feeds"].values())
-            static_feeds = list(feed_data["static_feeds"].values())
-            route_icons = feed_data.get("route_icons", route_icons)
-            self.hub_config[CONF_GTFS_PROVIDER] = feed_data["name"]
-            self.hub_config[CONF_GTFS_PROVIDER_ID] = gtfs_provider_id
+        feed_data = GtfsRealtimeConfigFlow.feeds.get(gtfs_provider_id, {})
+        realtime_feeds: list[str] = list(
+            feed_data.get("realtime_feeds", {"_": [""]}).values()
+        )
+        static_feeds: list[str] = list(
+            feed_data.get("static_feeds", {"blank_user_entry": [""]}).values()
+        )
+        route_icons: str = feed_data.get("route_icons", "")
+        self.hub_config[CONF_GTFS_PROVIDER] = feed_data.get("name", "")
+        self.hub_config[CONF_GTFS_PROVIDER_ID] = gtfs_provider_id
 
         data_schema = vol.Schema(
             {
@@ -262,10 +268,14 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_choose_informed_entities(
         self, user_input: dict[str, str] | None = None
     ):
+        """Select informed entities for sensor and binary_sensor platforms."""
         errors = {}
         if user_input is not None:
-            if CONF_ROUTE_IDS in user_input or CONF_STOP_IDS in user_input:
-                self.hub_config = self.hub_config | user_input
+            if (
+                len(user_input.get(CONF_ROUTE_IDS, [])) > 0
+                or len(user_input.get(CONF_STOP_IDS, [])) > 0
+            ):
+                self.hub_config |= user_input
                 # There appears to be a bug having the section for specific update intervals
                 # Default any missing ones here
                 for uri in self.hub_config[CONF_GTFS_STATIC_DATA]:
@@ -276,7 +286,7 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
                             "hours": CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT
                         }
                 return self.async_create_entry(
-                    title=user_input[CONF_GTFS_PROVIDER],
+                    title=user_input.get(CONF_GTFS_PROVIDER, "generic_gtfs_provider"),
                     data=self.hub_config,
                 )
             else:

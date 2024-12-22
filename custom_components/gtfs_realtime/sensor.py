@@ -82,7 +82,9 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         """Initialize the sensor."""
         # Required
         super().__init__(coordinator)
-        self.station_stop = StationStop(stop_id, coordinator.hub)
+        self.station_stop = coordinator.station_stops.setdefault(
+            stop_id, StationStop(stop_id, coordinator.hub)
+        )
         self._idx = idx
         self.coordinator = coordinator
         self.route_type = RouteType.UNKNOWN
@@ -115,6 +117,7 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
 
     @property
     def entity_picture(self) -> str | None:
+        """Provide the entity picture from a URL."""
         return (
             str(self.coordinator.route_icons).format(
                 self._arrival_detail[ROUTE_ID],
@@ -128,9 +131,11 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
 
     @property
     def icon(self) -> str:
+        """Provide the icon."""
         return self.__class__.ICON_DICT.get(self.route_type, "mdi:bus-clock")
 
     def update(self) -> None:
+        """Update state from coordinator data."""
         time_to_arrivals = sorted(self.station_stop.get_time_to_arrivals())
         self._arrival_detail = {}
         if len(time_to_arrivals) > self._idx:
