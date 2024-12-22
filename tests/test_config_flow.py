@@ -138,12 +138,16 @@ async def test_step_choose_static_and_realtime_feeds_no_prefill(
 
 
 async def test_step_choose_static_and_realtime_feeds_prefilled(
-    flow: GtfsRealtimeConfigFlow, example_gtfs_feed_data
+    flow: GtfsRealtimeConfigFlow,
+    example_gtfs_feed_data,
+    good_stops_response_patch,
+    good_routes_response_patch,
 ):
     """Test that choosing feeds pre-fills from the previous step."""
-    await flow.async_step_choose_static_and_realtime_feeds(example_gtfs_feed_data)
-    # hub will be configured with the provider name and ID
-    flow.hub_config[CONF_GTFS_PROVIDER_ID] = "example_gtfs_provider"
+    with good_stops_response_patch, good_routes_response_patch:
+        await flow.async_step_choose_static_and_realtime_feeds(example_gtfs_feed_data)
+        # hub will be configured with the provider name and ID
+        assert flow.hub_config[CONF_GTFS_PROVIDER_ID] == "example_gtfs_provider"
 
 
 async def test_step_choose_informed_entities(
