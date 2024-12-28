@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from gtfs_station_stop.arrival import Arrival
-from gtfs_station_stop.route_info import RouteInfo, RouteType
+from gtfs_station_stop.route_info import RouteType
 from gtfs_station_stop.station_stop import StationStop
 from gtfs_station_stop.station_stop_info import StationStopInfo
 from homeassistant.components.sensor import (
@@ -42,7 +42,7 @@ PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend(
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: GtfsRealtimeConfigEntry,
-    add_entities: AddEntitiesCallback,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the sensor platform."""
     coordinator: GtfsRealtimeCoordinator = entry.runtime_data
@@ -54,7 +54,7 @@ async def async_setup_entry(
                 arrival_sensors.append(
                     ArrivalSensor(coordinator=coordinator, stop_id=stop_id, idx=i)
                 )
-        add_entities(arrival_sensors, update_before_add=True)
+        async_add_entities(arrival_sensors, update_before_add=True)
 
 
 class ArrivalSensor(SensorEntity, CoordinatorEntity):
@@ -81,8 +81,8 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
     ) -> None:
         """Initialize the sensor."""
         # Required
-        super().__init__(coordinator)
-        self.station_stop = coordinator.station_stops.setdefault(
+        super().__init__(coordinator=coordinator)
+        self.station_stop = coordinator.gtfs_update_data.station_stops.setdefault(
             stop_id, StationStop(stop_id, coordinator.hub)
         )
         self._idx = idx
@@ -97,7 +97,7 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
 
     def _get_station_ref(self):
         station_stop_info: StationStopInfo = (
-            self.coordinator.station_stop_info_db.station_stop_infos.get(
+            self.coordinator.gtfs_update_data.schedule.get_stop_info(
                 self.station_stop.id
             )
         )
@@ -144,26 +144,26 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
                 time_to_arrival.time, 0
             )  # do not allow negative numbers
             self._arrival_detail[ROUTE_ID] = time_to_arrival.route
-            if self.coordinator.trip_info_db is not None:
-                trip_info = self.coordinator.trip_info_db.get_close_match(
-                    time_to_arrival.trip, self.coordinator.calendar
-                )
-                if trip_info is not None:
-                    self._arrival_detail[HEADSIGN] = trip_info.trip_headsign
-                    self._arrival_detail[TRIP_ID] = trip_info.trip_id
-            if self.coordinator.route_info_db is not None:
-                route_info: RouteInfo = self.coordinator.route_info_db.get(
+            self._arrival_detail[HEADSIGN] = (
+                self.coordinator.data.schedule.get_trip_headsign(time_to_arrival.trip)
+            )
+            self._arrival_detail[TRIP_ID] = time_to_arrival.trip
+            self._arrival_detail[ROUTE_COLOR] = (
+                self.coordinator.data.schedule.get_route_color(time_to_arrival.route)
+            )
+            self._arrival_detail[ROUTE_TEXT_COLOR] = (
+                self.coordinator.data.schedule.get_route_text_color(
                     time_to_arrival.route
                 )
-                if route_info is not None:
-                    self._arrival_detail[ROUTE_COLOR] = route_info.color
-                    self._arrival_detail[ROUTE_TEXT_COLOR] = route_info.text_color
-                    self.route_type = route_info.type
-                    self._arrival_detail[ROUTE_TYPE] = route_info.type.pretty_name()
+            )
+            self._arrival_detail[ROUTE_TYPE] = (
+                self.coordinator.data.schedule.get_route_type(time_to_arrival.route)
+            )
         else:
             self._attr_native_value = None
-        self.async_write_ha_state()
 
     @callback
     def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordainator."""
         self.update()
+        super()._handle_coordinator_update()

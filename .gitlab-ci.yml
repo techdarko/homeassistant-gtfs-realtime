@@ -4,9 +4,10 @@ stages:
   - trigger-deploy
 
 variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  PRE_COMMIT_HOME: "/.cache/pre-commit"
   PYTHON_IMAGE: python:3.13
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  POETRY_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pypoetry"
+  PRE_COMMIT_HOME: "$CI_PROJECT_DIR/.cache/pre-commit"
 
 include:
   - local: "/template/.python-container.yml"
@@ -48,6 +49,7 @@ pytest:
     paths:
       - $TEST_RESULTS_FILE
       - $TEST_COVERAGE_FILE
+      - tests/**/*.ambr
     reports:
       junit: $TEST_RESULTS_FILE
       coverage_report:
