@@ -6,9 +6,9 @@ import logging
 from typing import Any
 
 import aiohttp
-from gtfs_station_stop.route_info import RouteInfoDatabase
-from gtfs_station_stop.static_database import async_factory
-from gtfs_station_stop.station_stop_info import LocationType, StationStopInfoDatabase
+from gtfs_station_stop.route_info import RouteInfoDataset
+from gtfs_station_stop.static_dataset import async_factory
+from gtfs_station_stop.station_stop_info import LocationType, StationStopInfoDataset
 from homeassistant.config_entries import ConfigFlow
 from homeassistant.data_entry_flow import SectionConfig, section
 import homeassistant.helpers.config_validation as cv
@@ -183,7 +183,7 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def _get_route_options(self, headers={}) -> list[SelectOptionDict]:
         route_db = await async_factory(
-            RouteInfoDatabase, *self.hub_config[CONF_GTFS_STATIC_DATA], headers=headers
+            RouteInfoDataset, *self.hub_config[CONF_GTFS_STATIC_DATA], headers=headers
         )
         return [
             SelectOptionDict(
@@ -195,7 +195,7 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def _get_stop_options(self, headers={}) -> list[SelectOptionDict]:
         ssi_db = await async_factory(
-            StationStopInfoDatabase,
+            StationStopInfoDataset,
             *self.hub_config[CONF_GTFS_STATIC_DATA],
             headers=headers,
         )

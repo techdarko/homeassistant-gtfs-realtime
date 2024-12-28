@@ -1,11 +1,27 @@
 """Fixtures for testing."""
 
 import json
+from pathlib import Path
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+from syrupy.extensions.amber import AmberSnapshotExtension
+from syrupy.location import PyTestLocation
 
 from custom_components.gtfs_realtime.config_flow import DOMAIN
+
+DIFFERENT_DIRECTORY = "snapshots"
+
+
+class DifferentDirectoryExtension(AmberSnapshotExtension):
+    @classmethod
+    def dirname(cls, *, test_location: "PyTestLocation") -> str:
+        return str(Path(test_location.filepath).parent.joinpath(DIFFERENT_DIRECTORY))
+
+
+@pytest.fixture
+def snapshot(snapshot):
+    return snapshot.use_extension(DifferentDirectoryExtension)
 
 
 @pytest.fixture(autouse=True)

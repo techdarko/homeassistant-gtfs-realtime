@@ -1,0 +1,66 @@
+[tool.poetry]
+name = "homeassistant-gtfs-realtime"
+version = "0.2.0"
+description = "\"HomeAssistant custom integration for GTFS Realtime data.\""
+authors = ["Benjamin Pearce <gtfs@bcpearce.com>"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.13,<3.14"
+gtfs_station_stop = { git = "https://github.com/bcpearce/gtfs-station-stop.git", branch = "develop" }
+
+[tool.poetry.group.dev.dependencies]
+ruff = "0.8.4"
+pytest-homeassistant-custom-component = "^0.13.196"
+pytest = "8.3.4"
+pytest-cov = "6.0.0"
+pre-commit = "3.6.2"
+freezegun = "1.5.1"
+codecov = "2.1.13"
+syrupy = "^4.8.0"
+
+[tool.ruff]
+line-length = 88
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+norecursedirs = ".git"
+asyncio_mode = "auto"
+addopts = "--strict --cov=custom_components --allow-hosts=127.0.0.1,localhost"
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+indent = "    "
+not_skip = "__init__.py"
+force_sort_within_sections = true
+sections = "FUTURE,STDLIB,INBETWEENS,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
+default_section = "THIRDPARTY"
+known_first_party = "custom_components,tests"
+forced_separate = "tests"
+combine_as_imports = true
+
+[tool.mypy]
+python_version = "3.13"
+show_error_codes = true
+follow_imports = "silent"
+local_partial_types = true
+strict_equality = true
+no_implicit_optional = false
+warn_incomplete_stub = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+warn_return_any = true
+warn_unreachable = true
