@@ -1,0 +1,62 @@
+# serializer version: 1
+# name: test_diagnostics
+  dict({
+    'last_static_update': dict({
+      'https://example.com/gtfs1.zip': HAFakeDatetime(2024, 12, 29, 22, 40, 45, 943287),
+      'https://example.com/gtfs2.zip': HAFakeDatetime(2024, 12, 29, 22, 40, 45, 943287),
+    }),
+    'schedule': dict({
+      'calendar': dict({
+        'services': dict({
+          'Normal': Service(
+            added_exceptions=set({
+            }),
+            end=FakeDate(2024, 12, 31),
+            removed_exceptions=set({
+            }),
+            service_days=ServiceDays(
+              friday=False,
+              monday=False,
+              saturday=False,
+              sunday=False,
+              thursday=False,
+              tuesday=False,
+              wednesday=False,
+            ),
+            service_id='X',
+            start=FakeDate(2024, 12, 1),
+          ),
+        }),
+      }),
+      'route_info_ds': dict({
+        'route_infos': dict({
+          'Route': RouteInfo(
+            agency_id=None,
+            color=None,
+            desc=None,
+            id='Route',
+            long_name='Long Route Name',
+            short_name=None,
+            text_color=None,
+            type=<RouteType.SUBWAY: 1>,
+            url=None,
+          ),
+        }),
+      }),
+      'station_stop_info_ds': dict({
+        'station_stop_infos': dict({
+          'Stop': Stop: None, lat: None, long: None,
+        }),
+      }),
+      'trip_info_ds': dict({
+        'trip_infos': dict({
+          'Trip': Trip: Route to ,
+        }),
+      }),
+    }),
+    'static_update_frequency': dict({
+      'https://example.com/gtfs1.zip': datetime.timedelta(seconds=7200),
+      'https://example.com/gtfs2.zip': datetime.timedelta(seconds=7200),
+    }),
+  })
+# ---

@@ -1,7 +1,9 @@
 """Test sensor."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 from freezegun.api import FrozenDateTimeFactory
@@ -9,6 +11,7 @@ from gtfs_station_stop.arrival import Arrival
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
     async_fire_time_changed,
@@ -19,6 +22,10 @@ from custom_components.gtfs_realtime.coordinator import (
     GtfsRealtimeCoordinator,
     GtfsUpdateData,
 )
+
+
+def assert_all_equal(collection: Iterable[Any]) -> bool:
+    assert len(set(collection)) <= 1
 
 
 async def test_setup_sensors(hass: HomeAssistant, entry_v2_nodialout: MockConfigEntry):
@@ -37,6 +44,19 @@ async def test_setup_sensors(hass: HomeAssistant, entry_v2_nodialout: MockConfig
         assert await hass.config_entries.async_setup(entry_v2_nodialout.entry_id)
         await hass.async_block_till_done()
         assert hass.states.get("sensor.4_101n").state == STATE_UNKNOWN
+        # All Sensors of a station have the same device id
+        ent_reg = er.async_get(hass)
+        assert_all_equal(
+            ent_reg.async_get(f"sensor.{s}").device_id
+            for s in ["1_101n", "2_101n", "3_101n", "4_101n"]
+        )
+        assert_all_equal(
+            ent_reg.async_get(f"sensor.{s}").device_id
+            for s in ["1_102s", "2_102s", "3_102s", "4_102s"]
+        )
+        assert ent_reg.async_get("sensor.1_101n").device_id != ent_reg.async_get(
+            "sensor.1_102s"
+        )
 
 
 async def test_update(
