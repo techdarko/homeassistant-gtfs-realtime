@@ -1383,25 +1383,21 @@ setuptools = "*"
 
 [[package]]
 name = "gtfs-station-stop"
-version = "0.9.0_dev"
+version = "0.9.0"
 description = "Package for reading and organizing GTFS data for a given station stop."
 optional = false
-python-versions = "^3.11"
-files = []
-develop = false
+python-versions = "<4.0,>=3.11"
+files = [
+    {file = "gtfs_station_stop-0.9.0-py3-none-any.whl", hash = "sha256:64911d7531b9c8032961f1b5166f9307d755913e8e59ced116f0cc3c537bcb71"},
+    {file = "gtfs_station_stop-0.9.0.tar.gz", hash = "sha256:3e1f813fe1f79a1fd2669c8c630cb4d5d584502d4543e09e4c278b2ed155980b"},
+]
 
 [package.dependencies]
-aiohttp = "^3.11.11"
-aiohttp-client-cache = {version = "^0.12.4", extras = ["sqlite"]}
-gtfs-realtime-bindings = "^1.0.0"
-requests = "^2.32.3"
-requests-cache = "^1.2.1"
-
-[package.source]
-type = "git"
-url = "https://github.com/bcpearce/gtfs-station-stop.git"
-reference = "develop"
-resolved_reference = "2df6e705f7c7f1a97736a7cbef5c66d66e1373b9"
+aiohttp = ">=3.11.11,<4.0.0"
+aiohttp-client-cache = {version = ">=0.12.4,<0.13.0", extras = ["sqlite"]}
+gtfs-realtime-bindings = ">=1.0.0,<2.0.0"
+requests = ">=2.32.3,<3.0.0"
+requests-cache = ">=1.2.1,<2.0.0"
 
 [[package]]
 name = "h11"
@@ -4200,4 +4196,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.13,<3.14"
-content-hash = "676de10fb2b7d72730a7be80fda6bc6acd264aa5938514cf3f68bde36fa4993d"
+content-hash = "53d21d73d36dbee62fe6bb886dce4ee98aa8129fde512771d5b9664e563c2f74"
