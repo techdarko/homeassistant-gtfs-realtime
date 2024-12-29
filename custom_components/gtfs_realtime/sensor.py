@@ -15,6 +15,7 @@ from homeassistant.components.sensor import (
 from homeassistant.const import UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 import voluptuous as vol
@@ -24,6 +25,7 @@ from custom_components.gtfs_realtime import GtfsRealtimeConfigEntry
 from .const import (
     CONF_ARRIVAL_LIMIT,
     CONF_STOP_IDS,
+    DOMAIN,
     HEADSIGN,
     ROUTE_COLOR,
     ROUTE_ID,
@@ -52,7 +54,11 @@ async def async_setup_entry(
         for i in range(arrival_limit):
             for stop_id in entry.data[CONF_STOP_IDS]:
                 arrival_sensors.append(
-                    ArrivalSensor(coordinator=coordinator, stop_id=stop_id, idx=i)
+                    ArrivalSensor(
+                        coordinator=coordinator,
+                        stop_id=stop_id,
+                        idx=i,
+                    )
                 )
         async_add_entities(arrival_sensors, update_before_add=True)
 
@@ -74,10 +80,7 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
     }
 
     def __init__(
-        self,
-        coordinator: GtfsRealtimeCoordinator,
-        stop_id: str,
-        idx: int,
+        self, coordinator: GtfsRealtimeCoordinator, stop_id: str, idx: int
     ) -> None:
         """Initialize the sensor."""
         # Required
@@ -88,19 +91,21 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
         self._idx = idx
         self.coordinator = coordinator
         self.route_type = RouteType.UNKNOWN
+        self.gtfs_provider = coordinator.gtfs_provider
 
-        self._name = f"{self._idx + 1}: {self._get_station_ref()}"
+        self._name = f"{self._idx + 1}: {self._get_stop_ref()}"
         self._attr_unique_id = f"arrival_{self.station_stop.id}_{self._idx}"
         self._attr_suggested_display_precision = 0
         self._attr_suggested_unit_of_measurement = UnitOfTime.MINUTES
         self._arrival_detail: dict[str, str] = {}
 
-    def _get_station_ref(self):
-        station_stop_info: StationStopInfo = (
-            self.coordinator.gtfs_update_data.schedule.get_stop_info(
-                self.station_stop.id
-            )
+    def _get_stop_info(self) -> StationStopInfo | None:
+        return self.coordinator.gtfs_update_data.schedule.get_stop_info(
+            self.station_stop.id
         )
+
+    def _get_stop_ref(self):
+        station_stop_info = self._get_stop_info()
         if station_stop_info is not None:
             return station_stop_info.name
         return self.station_stop.id
@@ -133,6 +138,15 @@ class ArrivalSensor(SensorEntity, CoordinatorEntity):
     def icon(self) -> str:
         """Provide the icon."""
         return self.__class__.ICON_DICT.get(self.route_type, "mdi:bus-clock")
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.station_stop.id)},
+            name=f"{self._get_stop_ref()} ({self.station_stop.id})",
+            manufacturer=self.gtfs_provider,
+        )
 
     def update(self) -> None:
         """Update state from coordinator data."""

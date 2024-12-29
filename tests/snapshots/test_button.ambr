@@ -1,0 +1,8 @@
+# serializer version: 1
+# name: test_setup_button
+  list([
+    'button.refresh_schedule_feed_https_example_com_gtfs1_zip',
+    'button.refresh_schedule_feed_https_example_com_gtfs2_zip',
+    'button.clear_gtfs_schedule',
+  ])
+# ---

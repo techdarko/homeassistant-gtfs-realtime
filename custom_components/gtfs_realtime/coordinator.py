@@ -15,10 +15,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (
+    CONF_GTFS_PROVIDER,
     CONF_ROUTE_ICONS,
     CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT,
     DOMAIN,
 )
+
+PARALLEL_UPDATES = 0
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,6 +63,7 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
             "static_timedelta", {}
         )
         self.kwargs = kwargs
+        self.gtfs_provider = kwargs.get(CONF_GTFS_PROVIDER)
         self.hub: FeedSubject = feed_subject
         self.gtfs_update_data = GtfsUpdateData()
         self.gtfs_static_zip: Iterable[os.PathLike] | os.PathLike = gtfs_static_zip
@@ -78,7 +82,7 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
             for uri, last_update in self.last_static_update.items()
             if datetime.now() - last_update
             > self.static_timedelta.get(
-                uri, CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT
+                uri, timedelta(hours=CONF_STATIC_SOURCES_UPDATE_FREQUENCY_DEFAULT)
             )
         }
         await self.async_update_static_data()
@@ -89,7 +93,7 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
         """Update or clear static feeds and merge with existing datasets."""
         # Check for clear old data to reset the datasets
         if clear_old_data:
-            self.gtfs_update_data.schedule = None
+            self.gtfs_update_data.schedule = GtfsSchedule()
             _LOGGER.debug("GTFS Static data cleared")
 
         if self.gtfs_update_data.schedule == GtfsSchedule():
@@ -102,5 +106,6 @@ class GtfsRealtimeCoordinator(DataUpdateCoordinator):
             )
 
         for target in self.static_update_targets:
-            self.last_static_update.setdefault(target, datetime.now())
+            _LOGGER.debug(f"GTFS Static Feed {target} updated")
+            self.last_static_update[target] = datetime.now()
         self.static_update_targets.clear()

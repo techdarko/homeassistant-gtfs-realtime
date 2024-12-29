@@ -47,6 +47,11 @@ repos:
         args: 
           - --autofix
           - --top-keys=domain,title,name
+  - repo: https://github.com/python-poetry/poetry
+    rev: '1.8.5'
+    hooks:
+      -   id: poetry-check
+      -   id: poetry-lock
   - repo: local
     hooks:
       - id: hassfest

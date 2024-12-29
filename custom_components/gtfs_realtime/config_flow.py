@@ -212,8 +212,8 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
         self,
         stops: list[SelectOptionDict],
         routes: list[SelectOptionDict],
-        selected_stops=None,
-        selected_routes=None,
+        selected_stops: list[str] = [],
+        selected_routes: list[str] = [],
     ) -> vol.Schema:
         """Populate the config schema with stops and routes to choose."""
         data_schema = vol.Schema(
@@ -224,14 +224,20 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
                         CONF_GTFS_PROVIDER, "Generic GTFS Provider"
                     ),
                 ): cv.string,
-                vol.Optional(CONF_ROUTE_IDS): SelectSelector(
+                vol.Optional(
+                    CONF_ROUTE_IDS,
+                    default=selected_routes,
+                ): SelectSelector(
                     SelectSelectorConfig(
                         options=routes,
                         mode=SelectSelectorMode.DROPDOWN,
                         multiple=True,
                     )
                 ),
-                vol.Optional(CONF_STOP_IDS): SelectSelector(
+                vol.Optional(
+                    CONF_STOP_IDS,
+                    default=selected_stops,
+                ): SelectSelector(
                     SelectSelectorConfig(
                         options=stops,
                         mode=SelectSelectorMode.DROPDOWN,
@@ -313,4 +319,29 @@ class GtfsRealtimeConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=data_schema,
             errors=errors,
             last_step=True,
+        )
+
+    async def async_step_reconfigure(self, user_input: dict[str, str] | None = None):
+        entry = self._get_reconfigure_entry()
+        self.hub_config = entry.data
+        if user_input is not None:
+            self.async_set_unique_id()
+            self._abort_if_unique_id_mismatch()
+            return self.async_update_reload_and_abort(
+                self._get_reconfigure_entry(), data_updates=user_input
+            )
+
+        stops, routes = await asyncio.gather(
+            self._get_stop_options(),
+            self._get_route_options(),
+        )
+        data_schema = self._create_config_schema(
+            stops=stops,
+            routes=routes,
+            selected_stops=self.hub_config.get("stop_ids", []),
+            selected_routes=self.hub_config.get("route_ids", []),
+        )
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=data_schema,
         )
