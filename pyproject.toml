@@ -9,7 +9,7 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
-gtfs_station_stop = { git = "https://github.com/bcpearce/gtfs-station-stop.git", branch = "develop" }
+gtfs_station_stop = "^0.9.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "0.8.4"
