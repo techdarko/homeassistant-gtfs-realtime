@@ -13,10 +13,12 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.gtfs_realtime.config_flow import GtfsRealtimeConfigFlow
 from custom_components.gtfs_realtime.const import (
+    CONF_ARRIVAL_LIMIT,
     CONF_GTFS_PROVIDER,
     CONF_GTFS_PROVIDER_ID,
     CONF_GTFS_STATIC_DATA,
     CONF_ROUTE_IDS,
+    CONF_STATIC_SOURCES_UPDATE_FREQUENCY,
     CONF_STOP_IDS,
     CONF_URL_ENDPOINTS,
     DOMAIN,
@@ -212,20 +214,48 @@ async def test_step_choose_informed_entities_no_entities(
     assert result["step_id"] == "choose_informed_entities"
 
 
-@pytest.mark.skip(reason="Need to Reimplement Reconfiguration Step")
-async def test_step_reconfigure(hass: HomeAssistant, entry_v1: MockConfigEntry) -> None:
+async def test_step_reconfigure(
+    hass: HomeAssistant,
+    entry_v2_full: MockConfigEntry,
+    good_stops_response_patch,
+    good_routes_response_patch,
+) -> None:
     """Test Reconfigure."""
-    entry_v1.add_to_hass(hass)
-    old_entry_data = entry_v1.data.copy()
-    result = await entry_v1.start_reconfigure_flow(hass)
+    entry_v2_full.add_to_hass(hass)
+
+    with good_stops_response_patch, good_routes_response_patch:
+        result = await entry_v2_full.start_reconfigure_flow(hass)
+
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "reconfigure"
 
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"gtfs_static_data_update_frequency_hours": 15}
+        result["flow_id"],
+        user_input={
+            CONF_STATIC_SOURCES_UPDATE_FREQUENCY: {
+                "https://example.com/gtfs1.zip": {"hours": 15},
+                "https://example.com/gtfs2.zip": {"days": 42},
+            },
+            CONF_ROUTE_IDS: [],
+            CONF_STOP_IDS: [],
+            CONF_GTFS_PROVIDER: "Test GTFS Provider",
+            CONF_ARRIVAL_LIMIT: 4,
+        },
     )
+    hass.async_block_till_done()
+
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
-    entry = hass.config_entries.async_get_entry(entry_v1.entry_id)
-    assert entry.data == {**old_entry_data, **entry.data}
-    assert entry.data["gtfs_static_data_update_frequency_hours"] == 15
+    entry = hass.config_entries.async_get_entry(entry_v2_full.entry_id)
+    assert (
+        entry.data[CONF_STATIC_SOURCES_UPDATE_FREQUENCY][
+            "https://example.com/gtfs1.zip"
+        ]["hours"]
+        == 15
+    )
+    assert (
+        entry.data[CONF_STATIC_SOURCES_UPDATE_FREQUENCY][
+            "https://example.com/gtfs2.zip"
+        ]["days"]
+        == 42
+    )

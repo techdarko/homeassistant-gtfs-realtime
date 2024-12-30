@@ -4,8 +4,11 @@
   cache:
     paths:
       - .cache/pip
+      - .cache/pypoetry
+      - .cache/pre-commit
   before_script:
     - python --version ; pip --version
     - pip install --upgrade pip
-    - pip install $(cat requirements.test.txt | grep "gtfs-station-stop") || pip install git+https://github.com/bcpearce/gtfs-station-stop.git@develop
-    - pip install -r requirements.test.txt
+    - pip install poetry --upgrade
+    - poetry install
+    - source `poetry env info --path`/bin/activate

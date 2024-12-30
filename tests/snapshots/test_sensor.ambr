@@ -1,0 +1,25 @@
+# serializer version: 1
+# name: test_update[1_101n-after-1-minute]
+  '3.0'
+# ---
+# name: test_update[1_102s-after-1-minute]
+  '8.0'
+# ---
+# name: test_update[2_101n-after-1-minute]
+  '5.0'
+# ---
+# name: test_update[2_102s-after-1-minute]
+  '12.0'
+# ---
+# name: test_update[3_101n-after-1-minute]
+  '7.0'
+# ---
+# name: test_update[3_102s-after-1-minute]
+  '16.0'
+# ---
+# name: test_update[4_101n-after-1-minute]
+  'unknown'
+# ---
+# name: test_update[4_102s-after-1-minute]
+  'unknown'
+# ---
