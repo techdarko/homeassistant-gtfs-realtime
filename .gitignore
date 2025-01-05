@@ -183,3 +183,4 @@ home-assistant_v2.db-wal
 
 # Ignore Misc
 *.old
+*.zip

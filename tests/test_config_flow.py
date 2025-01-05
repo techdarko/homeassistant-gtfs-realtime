@@ -242,7 +242,7 @@ async def test_step_reconfigure(
             CONF_ARRIVAL_LIMIT: 4,
         },
     )
-    hass.async_block_till_done()
+    await hass.async_block_till_done()
 
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"

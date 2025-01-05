@@ -52,6 +52,9 @@ async def test_update_static_data(
         async_build_schedule_mock.assert_awaited()
         update_call_count = async_update_schedule_mock.call_count
 
+        # Has provider name
+        assert entry_v2_full.runtime_data.gtfs_provider == "Entry V2 Mock"
+
         # Tick the clock and check if static data is updated
         freezer.tick(timedelta(hours=2))
         async_fire_time_changed(hass)
