@@ -13,12 +13,12 @@ from custom_components.gtfs_realtime.const import (
 )
 
 
-async def test_lifecycle(hass: HomeAssistant, entry_v2_full) -> None:
+async def test_lifecycle(hass: HomeAssistant, entry_v2_nodialout) -> None:
     """Test the component gets setup."""
-    entry_v2_full.add_to_hass(hass)
-    await hass.config_entries.async_setup(entry_v2_full.entry_id)
+    entry_v2_nodialout.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry_v2_nodialout.entry_id)
     await hass.async_block_till_done()
-    assert await hass.config_entries.async_remove(entry_v2_full.entry_id)
+    assert await hass.config_entries.async_remove(entry_v2_nodialout.entry_id)
     await hass.async_block_till_done()
 
 

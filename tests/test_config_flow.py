@@ -242,11 +242,12 @@ async def test_step_reconfigure(
             CONF_ARRIVAL_LIMIT: 4,
         },
     )
-    await hass.async_block_till_done()
 
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
     entry = hass.config_entries.async_get_entry(entry_v2_full.entry_id)
+    await hass.async_block_till_done()
+
     assert (
         entry.data[CONF_STATIC_SOURCES_UPDATE_FREQUENCY][
             "https://example.com/gtfs1.zip"
@@ -259,3 +260,5 @@ async def test_step_reconfigure(
         ]["days"]
         == 42
     )
+
+    hass.stop()
