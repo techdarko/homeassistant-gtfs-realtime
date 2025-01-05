@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "homeassistant-gtfs-realtime"
-version = "0.2.0"
+version = "0.2.2"
 description = "\"HomeAssistant custom integration for GTFS Realtime data.\""
 authors = ["Benjamin Pearce <gtfs@bcpearce.com>"]
 license = "MIT"
