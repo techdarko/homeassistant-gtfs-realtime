@@ -147,9 +147,15 @@ async def test_step_choose_static_and_realtime_feeds_prefilled(
 ):
     """Test that choosing feeds pre-fills from the previous step."""
     with good_stops_response_patch, good_routes_response_patch:
-        await flow.async_step_choose_static_and_realtime_feeds(example_gtfs_feed_data)
+        result: ConfigFlowResult = (
+            await flow.async_step_choose_static_and_realtime_feeds(
+                example_gtfs_feed_data
+            )
+        )
         # hub will be configured with the provider name and ID
         assert flow.hub_config[CONF_GTFS_PROVIDER_ID] == "example_gtfs_provider"
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "choose_informed_entities"
 
 
 async def test_step_choose_informed_entities(
