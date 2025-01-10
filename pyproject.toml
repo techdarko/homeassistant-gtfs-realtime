@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "homeassistant-gtfs-realtime"
-version = "0.2.2"
+version = "0.2.3"
 description = "\"HomeAssistant custom integration for GTFS Realtime data.\""
 authors = ["Benjamin Pearce <gtfs@bcpearce.com>"]
 license = "MIT"
 readme = "README.md"
-package-mode = false
+packages = [{include = "gtfs_realtime", from = "custom_components"}]
 
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
@@ -64,3 +64,7 @@ disallow_untyped_decorators = true
 disallow_untyped_defs = true
 warn_return_any = true
 warn_unreachable = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

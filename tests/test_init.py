@@ -20,6 +20,7 @@ async def test_lifecycle(hass: HomeAssistant, entry_v2_nodialout) -> None:
     await hass.async_block_till_done()
     assert await hass.config_entries.async_remove(entry_v2_nodialout.entry_id)
     await hass.async_block_till_done()
+    hass.stop()
 
 
 async def test_migrate_from_v1(
