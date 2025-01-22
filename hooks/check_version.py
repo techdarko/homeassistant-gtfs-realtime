@@ -1,3 +1,5 @@
+"""Check if the version in pyproject.toml matches the manifest."""
+
 #!/usr/bin/python
 import importlib.metadata
 import json
@@ -5,10 +7,9 @@ import json
 import tomllib
 
 if __name__ == "__main__":
-    """Check if the version in pyproject.toml matches the manifest."""
     try:
         installed_version = importlib.metadata.version("homeassistant-gtfs-realtime")
-        with open("custom_components/gtfs_realtime/manifest.json") as f:
+        with open("custom_components/gtfs_realtime/manifest.json", "rb") as f:
             manifest_version = json.load(f)["version"]
         with open("pyproject.toml", "rb") as f:
             pyproject_version = tomllib.load(f)["tool"]["poetry"]["version"]
@@ -20,5 +21,5 @@ if __name__ == "__main__":
                 f"{installed_version=}, {manifest_version=}, {pyproject_version=}",
             )
             exit(1)
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"An error occurred {e}")

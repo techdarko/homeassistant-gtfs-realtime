@@ -20,16 +20,20 @@ DIFFERENT_DIRECTORY = "snapshots"
 
 
 class DifferentDirectoryExtension(AmberSnapshotExtension):
+    """Change default snapshot directory."""
+
     @classmethod
     def dirname(cls, *, test_location: "PyTestLocation") -> str:
         return str(Path(test_location.filepath).parent.joinpath(DIFFERENT_DIRECTORY))
 
 
-@pytest.fixture
-def snapshot(snapshot):
+@pytest.fixture(name="snapshot")
+def snapshot_fixture(snapshot):
+    """Update snapshot directory."""
     return snapshot.use_extension(DifferentDirectoryExtension)
 
 
+# pylint: disable=unused-argument
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
     """Enable custom integration that will be tested."""
@@ -51,7 +55,7 @@ def create_config_entry_v1():
 @pytest.fixture(name="entry_v1_full")
 def create_config_entry_v1_full():
     """Fixture with full mock data for entry version 1."""
-    with open("tests/fixtures/config_entry_v1_full.json") as f:
+    with open("tests/fixtures/config_entry_v1_full.json", "rb") as f:
         conf = json.load(f)
     yield MockConfigEntry(**conf)
 
@@ -59,7 +63,7 @@ def create_config_entry_v1_full():
 @pytest.fixture(name="entry_v2_full")
 def create_config_entry_v2_full():
     """Fixture with full mock data for entry version 2."""
-    with open("tests/fixtures/config_entry_v2_full.json") as f:
+    with open("tests/fixtures/config_entry_v2_full.json", "rb") as f:
         conf = json.load(f)
     yield MockConfigEntry(**conf)
 
@@ -67,13 +71,14 @@ def create_config_entry_v2_full():
 @pytest.fixture(name="entry_v2_nodialout")
 def create_config_entry_v2_nodialout():
     """Fixture with mock data for entry version 2 with limited URLs to access."""
-    with open("tests/fixtures/config_entry_v2_nodialout.json") as f:
+    with open("tests/fixtures/config_entry_v2_nodialout.json", "rb") as f:
         conf = json.load(f)
     yield MockConfigEntry(**conf)
 
 
-@pytest.fixture
-def mock_schedule():
+@pytest.fixture(name="mock_schedule")
+def mock_schedule_fixture():
+    """GTFS Schedule Fixture."""
     mock_schedule = GtfsSchedule()
     mock_schedule.calendar.services["Normal"] = Service(
         "X",

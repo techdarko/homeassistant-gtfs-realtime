@@ -4,11 +4,10 @@
   cache:
     paths:
       - .cache/pip
-      - .cache/pypoetry
       - .cache/pre-commit
   before_script:
     - python --version ; pip --version
     - pip install --upgrade pip
-    - pip install poetry --upgrade
-    - poetry install
-    - source `poetry env info --path`/bin/activate
+    - pip install uv --upgrade
+    - uv sync --prerelease=allow
+    - source .venv/bin/activate
