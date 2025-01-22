@@ -6,6 +6,7 @@
       "trip_update": "https://cdn.mbta.com/realtime/TripUpdates.pb",
       "vehicle_positions": "https://cdn.mbta.com/realtime/VehiclePositions.pb"
     },
+    "requires_auth_header": false,
     "static_feeds": {
       "regular": "https://cdn.mbta.com/MBTA_GTFS.zip"
     }
@@ -23,6 +24,7 @@
       "SIR": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si",
       "alerts": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts"
     },
+    "requires_auth_header": false,
     "route_icons": "https://raw.githubusercontent.com/bcpearce/homeassistant-gtfs-realtime/main/resources/NYCT_Bullets/{}.svg",
     "static_feeds": {
       "regular": "http://web.mta.info/developers/data/nyct/subway/google_transit.zip",
@@ -36,6 +38,7 @@
       "trip_update": "https://gtfsrt.prod.obanyc.com/tripUpdates?key=",
       "vehicle_positions": "https://gtfsrt.prod.obanyc.com/vehiclePositions?key="
     },
+    "requires_auth_header": false,
     "static_feeds": {
       "bronx": "http://web.mta.info/developers/data/nyct/bus/google_transit_bronx.zip",
       "brooklyn": "http://web.mta.info/developers/data/nyct/bus/google_transit_brooklyn.zip",
@@ -210,6 +213,18 @@
     },
     "static_feeds": {
       "public_transit_for_realtime_sydneytrains": "https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains"
+    }
+  },
+  "vancouver_translink": {
+    "name": "Metro Vancouver - TransLink",
+    "disclaimer": "Some of the data used in this product or service is provided by permission of TransLink. TransLink assumes no responsibility for the accuracy or currency of the Data used in this product or service.",
+    "realtime_feeds": {
+      "alerts": "https://gtfsapi.translink.ca/v3/gtfsalerts?apikey=[ApiKey]",
+      "trip_update": "https://gtfsapi.translink.ca/v3/gtfsrealtime?apikey=[ApiKey]"
+    },
+    "requires_auth_header": false,
+    "static_feeds": {
+      "regular": "https://gtfs-static.translink.ca/gtfs/google_transit.zip"
     }
   },
   "washington_metro_area_bus": {
