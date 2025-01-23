@@ -6,7 +6,6 @@ stages:
 variables:
   PYTHON_IMAGE: python:3.13
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  POETRY_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pypoetry"
   PRE_COMMIT_HOME: "$CI_PROJECT_DIR/.cache/pre-commit"
 
 include:
