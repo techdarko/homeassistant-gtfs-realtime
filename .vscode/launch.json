@@ -5,7 +5,7 @@
       "args": [
         "--debug",
         "-c",
-        "."
+        "config"
       ],
       "env": {
         "GTFS_REALTIME_SHOW_MEMORY_USE": "on"
@@ -20,7 +20,7 @@
       "args": [
         "--debug",
         "-c",
-        ".",
+        "config",
         "--skip-pip"
       ],
       "justMyCode": false,
