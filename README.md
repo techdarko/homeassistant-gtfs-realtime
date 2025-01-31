@@ -2,21 +2,25 @@
 ![GTFS Realtime](resources/logo.svg)
 # GTFS Realtime for Home Assistant
 
+![test coverage](./coverage.svg)
+
 ## Installation
 
 This integration can be installed manually or through [HACS](https://hacs.xyz/) as a custom repository.
 
-#### Manual
-
-Copy files in [custom_components/gtfs_realtime](custom_components/gtfs_realtime/) to [/path/to/homeassistant/config/custom_components/gtfs_realtime](#).
-
 #### HACS
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bcpearce&repository=homeassistant-gtfs-realtime&category=Integration)
 
 1. Go to HACS in your Home Assistant Integration
 2. Select "Integrations"
 3. Click the "..." in the upper left corner.
 4. Go to Custom Repositories
 5. Add this repository's URL https://github.com/bcpearce/homeassistant-gtfs-realtime in "Repository", and set the category to "Integration"
+
+#### Manual
+
+Copy files in [custom_components/gtfs_realtime](custom_components/gtfs_realtime/) to [/path/to/homeassistant/config/custom_components/gtfs_realtime](#).
 
 ## Configuration
 
@@ -34,15 +38,13 @@ Less frequently updated data will be provided as one or more .zip files. Include
 
 ### API Key
 
-If your provider requires an API Key. It must be included. Otherwise, leave this blank. The API Key will be supplied as a header under the "api_key" field.
+If your provider requires an API Key, it can be included as a header field for HTTP requests. It should be given in the format expected by your provider. 
 
 ### Route Icons
 
 Optionally route icons can be included.  The integration will default to using MDI icons otherwise. For NYC Subway integrations, and other supported integrations, the resources folder may contain valid route icons to use.  
 
 For custom use, a URL must be provided that includes up to three Python format braces for `{route_id}`, `{route_color}` and `{route_text_color}`. At minimum, `{route_id}` must be provided.  These braces should be placed in the input string and conform to the requirements in Python'a [str.format()](https://docs.python.org/3/library/stdtypes.html#str.format) method. 
-
-See [Digital Ocean Route Icons](https://github.com/bcpearce/Digital-Ocean-Route-Icons) for a project using Digital Ocean functions to provide a dynamic icon using the GTFS provider's Route Color and Route Text Color. 
 
 #### Resources
 
@@ -69,6 +71,14 @@ Raw sensor data is provided in seconds. Minutes are the recommended unit.
 ### Alert Sensor
 
 Alert sensors can be setup for a `route_id`. The [example/frontend.yaml](example/frontend.yaml) file shows how to set up conditional cards that display only if an alert is active. The alert sensor will switch to the "Problem" state if an alert is active for a given station or route. This can be used in automations, such as turning on an indicator LED when an alert becomes active. 
+
+## Devices
+
+Each stop will collect the arrival sensors together as a device. For each static data collection, a device is also included for managing the schedule updates.
+
+## Services
+
+Services are provided for updating and clearing the static data schedule. During setup, an interval for refreshing this data can be provided.
 
 ## GTFS Station Stop
 

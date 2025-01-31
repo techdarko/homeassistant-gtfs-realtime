@@ -184,3 +184,4 @@ home-assistant_v2.db-wal
 # Ignore Misc
 *.old
 *.zip
+custom_components/gtfs_realtime/user_feeds.json

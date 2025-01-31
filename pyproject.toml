@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "homeassistant-gtfs-realtime"
-version = "0.2.5"
+version = "0.2.6"
 description = "HomeAssistant custom integration for GTFS Realtime data."
 authors = [{ name= "Benjamin Pearce", email = "gtfs@bcpearce.com" }]
 license = "MIT"
@@ -16,6 +16,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "coverage-badge>=1.1.2",
     "pre-commit>=2.0.1",
     "pytest-homeassistant-custom-component>=0.13.204",
     "ruff>=0.9.2",
