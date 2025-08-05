@@ -356,7 +356,7 @@
     }
   },
   "washington_metro_area_bus": {
-    "name": "Washington Metropolitan Area Transit Authroity Bus",
+    "name": "Washington Metropolitan Area Transit Authority Bus",
     "realtime_feeds": {
       "alerts": "https://api.wmata.com/gtfs/bus-gtfsrt-alerts.pb",
       "trip_update": "https://api.wmata.com/gtfs/bus-gtfsrt-tripupdates.pb",
