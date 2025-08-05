@@ -1,4 +1,15 @@
 {
+  "ac_transit": {
+    "name": "AC Transit",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=AC",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=AC"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=AC"
+    }
+  },
   "adelaide_metro": {
     "name": "Adelaide Metro \u2013 Department for Infrastructure and Transport, South Australia",
     "disclaimer": "https://www.adelaidemetro.com.au/developer-info",
@@ -11,6 +22,17 @@
       "latest": "https://gtfs.adelaidemetro.com.au/v1/static/latest/google_transit.zip"
     }
   },
+  "altamont_ace": {
+    "name": "Altamont Corridor Express (ACE)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=CE",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=CE"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=CE"
+    }
+  },
   "boston_mbta": {
     "name": "Boston MBTA",
     "realtime_feeds": {
@@ -21,6 +43,39 @@
     "requires_auth_header": false,
     "static_feeds": {
       "regular": "https://cdn.mbta.com/MBTA_GTFS.zip"
+    }
+  },
+  "caltrain": {
+    "name": "Caltrain",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=CT",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=CT"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=CT"
+    }
+  },
+  "capitol_corridor": {
+    "name": "Capitol Corridor (Amtrak)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=AM",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=AM"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=AM"
+    }
+  },
+  "cc_county": {
+    "name": "Contra Costa County Connection",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=CC",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=CC"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=CC"
     }
   },
   "ct_transit": {
@@ -58,6 +113,17 @@
       "regular": "https://www.rtd-denver.com/files/gtfs/google_transit.zip"
     }
   },
+  "emery": {
+    "name": "Emery Go-Round (Emeryville, CA)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=EM",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=EM"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=EM"
+    }
+  },
   "exo_quebec": {
     "name": "Exo (Quebec / Montreal)",
     "auth_hint": "Ocp-Apim-Subscription-Key: [Subscription Key]",
@@ -71,6 +137,39 @@
     "static_feeds": {
       "citcrc": "https://exo.quebec/xdata/citcrc/google_transit.zip",
       "trains": "https://exo.quebec/xdata/trains/google_transit.zip"
+    }
+  },
+  "fast_ca": {
+    "name": "FAST (Fairfield, CA)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=FS",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=FS"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=FS"
+    }
+  },
+  "gg_ferry": {
+    "name": "Golden Gate Ferry",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=GF",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=GF"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=GF"
+    }
+  },
+  "gg_transit": {
+    "name": "Golden Gate Transit",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=GG",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=GG"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=[operatorID]"
     }
   },
   "houston_metro": {
@@ -98,6 +197,50 @@
       "rail": "https://gitlab.com/LACMTA/gtfs_rail/raw/master/gtfs_rail.zip"
     }
   },
+  "lavta": {
+    "name": "Livermore Amador Valley Transit Authority (LAVTA)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=WH",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=WH"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=WH"
+    }
+  },
+  "marin": {
+    "name": "Marin Transit",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=MA",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=MA"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=MA"
+    }
+  },
+  "mission_bay": {
+    "name": "Mission Bay TMA (San Francisco, CA)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=MB",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=MB"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=MB"
+    }
+  },
+  "mountainview_go": {
+    "name": "MVgo (Mountain View, CA)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=MV",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=MV"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=MV"
+    }
+  },
   "mta_marc_train": {
     "name": "MTA MARC Train",
     "realtime_feeds": {
@@ -108,6 +251,17 @@
     "requires_auth_header": false,
     "static_feeds": {
       "regular": "https://feeds.mta.maryland.gov/gtfs/marc"
+    }
+  },
+  "napa": {
+    "name": "Napa Valley Transportation Authority (VINE Transit)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=VN",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=VN"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=VN"
     }
   },
   "nyc_00_subway": {
@@ -177,6 +331,17 @@
       "regular": "http://nycferry.connexionz.net/rtt/public/utility/gtfs.aspx"
     }
   },
+  "petaluma": {
+    "name": "Petaluma Transit",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=PE",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=PE"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=PE"
+    }
+  },
   "philadelphia_septa": {
     "name": "Philadelphia - SEPTA (Rail and Bus)",
     "realtime_feeds": {
@@ -189,14 +354,93 @@
       "nested": "https://www3.septa.org/developer/gtfs_public.zip"
     }
   },
+  "presidio": {
+    "name": "Presidio GO (San Francisco, CA)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=PG",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=PG"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=PG"
+    }
+  },
+  "samtrans": {
+    "name": "samTrans (San Mateo County)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=SM",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=SM"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=SM"
+    }
+  },
+  "santa_rosa": {
+    "name": "Santa Rosa CityBus",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=SR",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=SR"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=SR"
+    }
+  },
   "sf_bart": {
     "name": "Bay Area Rapid Transit",
     "realtime_feeds": {
       "alerts": "http://api.bart.gov/gtfsrt/alerts.aspx",
       "trip_update": "http://api.bart.gov/gtfsrt/tripupdate.aspx"
     },
+    "route_icons": "https://raw.githubusercontent.com/bcpearce/homeassistant-gtfs-realtime/main/resources/BART/BA:{}.svg?raw=true",
     "static_feeds": {
       "regular": "https://www.bart.gov/dev/schedules/google_transit.zip"
+    }
+  },
+  "sf_muni": {
+    "name": "San Francisco Municipal Railway",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=SF",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=SF"
+    },
+    "route_icons": "https://raw.githubusercontent.com/bcpearce/homeassistant-gtfs-realtime/main/resources/SFMuni/{}.svg?raw=true",
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=SF"
+    }
+  },
+  "smart": {
+    "name": "Sonoma-Marin Area Rail Transit (SMART)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=SM",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=SM"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=SM"
+    }
+  },
+  "soltrans": {
+    "name": "Solano County Transit (SolTrans)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=st",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=st"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=st"
+    }
+  },
+  "south_sf": {
+    "name": "South San Francisco Shuttle",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=SS",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=SS"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=SS"
     }
   },
   "sydney_buses": {
@@ -343,6 +587,39 @@
       "nested": "https://opendata.transport.vic.gov.au/dataset/3f4e292e-7f8a-4ffe-831f-1953be0fe448/resource/aeee08cf-6da4-4206-b6b4-202ad488401f/download/gtfs.zip"
     }
   },
+  "tri_delta": {
+    "name": "Tri Delta Transit (Easter Contra Costa County)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=3D",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=3D"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=3D"
+    }
+  },
+  "union_city_ca": {
+    "name": "Union City Transit (CA)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=UC",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=UC"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=UC"
+    }
+  },
+  "vacaville": {
+    "name": "Vacaville City Coach",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=VC",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=VC"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=VC"
+    }
+  },
   "vancouver_translink": {
     "name": "Metro Vancouver - TransLink",
     "disclaimer": "Some of the data used in this product or service is provided by permission of TransLink. TransLink assumes no responsibility for the accuracy or currency of the Data used in this product or service.",
@@ -355,8 +632,19 @@
       "regular": "https://gtfs-static.translink.ca/gtfs/google_transit.zip"
     }
   },
+  "vta": {
+    "name": "Santa Clara Valley Transportation Authority (VTA)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=SC",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=SC"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=SC"
+    }
+  },
   "washington_metro_area_bus": {
-    "name": "Washington Metropolitan Area Transit Authroity Bus",
+    "name": "Washington Metropolitan Area Transit Authority Bus",
     "realtime_feeds": {
       "alerts": "https://api.wmata.com/gtfs/bus-gtfsrt-alerts.pb",
       "trip_update": "https://api.wmata.com/gtfs/bus-gtfsrt-tripupdates.pb",
@@ -375,6 +663,17 @@
     },
     "static_feeds": {
       "regular": "https://api.wmata.com/gtfs/rail-gtfs-static.zip"
+    }
+  },
+  "westcat": {
+    "name": "WestCAT (Western Contra Costa County)",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=WC",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=WC"
+    },
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=WC"
     }
   }
 }
