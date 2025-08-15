@@ -20,7 +20,7 @@ CONF_MINOR_VERSION = 0
 # ERRORS
 CONF_SELECT_AT_LEAST_ONE_STOP_OR_ROUTE = "select_at_least_one_stop_or_route"
 
-FEEDS_URL = "https://raw.githubusercontent.com/bcpearce/homeassistant-gtfs-realtime/refs/heads/main/custom_components/gtfs_realtime/feeds.json"
+FEEDS_URL = "https://raw.githubusercontent.com/techdarko/homeassistant-gtfs-realtime/refs/heads/bay-area-transit-feeds/custom_components/gtfs_realtime/feeds.json"
 
 STOP_ID = "stop_id"
 ROUTE_ID = "route_id"
