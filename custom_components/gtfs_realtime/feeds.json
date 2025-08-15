@@ -388,7 +388,7 @@
     }
   },
   "sf_bart": {
-    "name": "Bay Area Rapid Transit",
+    "name": "Bay Area Rapid Transit - No Auth, No Line Display",
     "realtime_feeds": {
       "alerts": "http://api.bart.gov/gtfsrt/alerts.aspx",
       "trip_update": "http://api.bart.gov/gtfsrt/tripupdate.aspx"
@@ -396,6 +396,18 @@
     "route_icons": "https://raw.githubusercontent.com/techdarko/homeassistant-gtfs-realtime/refs/heads/bay-area-transit-feeds/resources/BART/BA:{}.svg?raw=true",
     "static_feeds": {
       "regular": "https://www.bart.gov/dev/schedules/google_transit.zip"
+    }
+  },
+  "sf_bart_new": {
+    "name": "Bay Area Rapid Transit - Auth Required, Shows Line",
+    "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
+    "realtime_feeds": {
+      "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=BA",
+      "trip_update": "http://api.511.org/transit/tripupdates?api_key=[ApiKey]&agency=BA"
+    },
+    "route_icons": "https://raw.githubusercontent.com/techdarko/homeassistant-gtfs-realtime/refs/heads/bay-area-transit-feeds/resources/BART/BA:{}.svg?raw=true",
+    "static_feeds": {
+      "regular": "http://api.511.org/transit/datafeeds?api_key=[ApiKey]&operator_id=BA"
     }
   },
   "sf_muni": {
