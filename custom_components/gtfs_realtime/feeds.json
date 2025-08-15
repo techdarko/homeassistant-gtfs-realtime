@@ -399,7 +399,7 @@
     }
   },
   "sf_bart_new": {
-    "name": "Bay Area Rapid Transit",
+    "name": "Bay Area Rapid Transit - Auth Required, Shows Line",
     "disclaimer": "Uses 511.org - free API Key Required. Request a token and see terms at https://511.org/open-data/token",
     "realtime_feeds": {
       "alerts": "http://api.511.org/transit/servicealerts?api_key=[ApiKey]&agency=BA",
